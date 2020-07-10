@@ -43,11 +43,6 @@ struct MonitorConfig {
     alert_threshold: u64,
 }
 
-#[derive(Debug)]
-struct MonitorState {
-    date: u64,
-}
-
 impl Default for MonitorConfig {
     fn default() -> Self {
         // The default stats specified in the assignment description.
@@ -94,7 +89,7 @@ fn monitor(source: &mut impl Read, sink: &mut impl Write, _config: &MonitorConfi
 }
 
 #[test]
-/// Simplest case: validate that we get the correct output given no input.
+/// Tests with no input.
 fn test_monitor_nothing() -> Result<()> {
     let input = "";
     let expected = "";
@@ -111,6 +106,7 @@ fn test_monitor_nothing() -> Result<()> {
     Ok(())
 }
 
+/// Test the provided sample input.
 #[test]
 fn test_monitor_sample_input() -> Result<()> {
     let input = &include_str!("../sample_input.csv")[..];
