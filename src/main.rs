@@ -5,14 +5,15 @@ use serde::Deserialize;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
-    io::{Cursor, Read, Write, stdin, stdout},
+    io::{stdin, stdout, Cursor, Read, Write},
+    str,
 };
 
 #[derive(argh::FromArgs)]
 /// Generates alerts to stdout from HTTP logs via stdin.
 struct Args {}
 
-/// HTTP request record from input 
+/// HTTP request record from input
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 struct RequestRecord {
     /// client host that the request came from
@@ -21,20 +22,20 @@ struct RequestRecord {
     rfc931: String,
     #[serde(rename = "authuser")]
     auth_user: String,
-    /// unix timestamp of request 
+    /// unix timestamp of request
     date: u64,
     /// first line of the http request, with the method and path
     request: String,
     /// http status code of response
     status: u64,
     /// bytes length of response
-    bytes: u64
+    bytes: u64,
 }
 
 /// Configuration for a monitor.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 struct MonitorConfig {
-    /// number of seconds of log messages to aggregate for stats. 
+    /// number of seconds of log messages to aggregate for stats.
     stats_window: u64,
     // number of seconds of log messages to aggregate for alerts.
     alert_window: u64,
@@ -44,7 +45,7 @@ struct MonitorConfig {
 
 #[derive(Debug)]
 struct MonitorState {
-    date: u64
+    date: u64,
 }
 
 impl Default for MonitorConfig {
@@ -53,12 +54,12 @@ impl Default for MonitorConfig {
         Self {
             stats_window: 10,
             alert_window: 120,
-            alert_threshold: 10
+            alert_threshold: 10,
         }
     }
 }
 
-/// Application entry point. 
+/// Application entry point.
 fn main() -> Result<()> {
     if atty::is(atty::Stream::Stdin) {
         eprintln!("ERROR: stdin must be a stream or file, not a terminal.");
@@ -84,26 +85,45 @@ fn monitor(source: &mut impl Read, sink: &mut impl Write, _config: &MonitorConfi
     let previous: Option<RequestRecord> = None;
 
     for result in reader.deserialize() {
-
-
         let record: RequestRecord = result?;
-        writeln!(sink, "{}", record.remote_host)?;
+        writeln!(sink, "{:?}", record)?;
+        break;
     }
 
     Ok(())
 }
 
-
 #[test]
 /// Simplest case: validate that we get the correct output given no input.
 fn test_monitor_nothing() -> Result<()> {
-    let mut input= Cursor::new(Vec::new());
-    let mut output = Cursor::new(Vec::new());
+    let input = "";
+    let expected = "";
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
     let config = MonitorConfig::default();
 
-    monitor(&mut input, &mut output, &config)?;
+    monitor(&mut source, &mut sink, &config).unwrap();
 
-    assert_eq!(&output.into_inner(), &vec![]);
+    let actual = sink.into_inner();
+    let actual = str::from_utf8(&actual)?;
+    assert_eq!(actual, expected);
+    Ok(())
+}
 
+#[test]
+fn test_monitor_sample_input() -> Result<()> {
+    let input = &include_str!("../sample_input.csv")[..];
+    let expected = "";
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    monitor(&mut source, &mut sink, &config)?;
+
+    let actual = sink.into_inner();
+    let actual = str::from_utf8(&actual)?;
+    assert_eq!(actual, expected);
     Ok(())
 }
