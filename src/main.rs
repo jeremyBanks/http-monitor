@@ -23,29 +23,30 @@ use thiserror;
 struct RequestRecord {
     /// client host that the request came from
     #[serde(rename = "remotehost")]
-    remote_host: String,
-    rfc931: String,
+    pub remote_host: String,
+    ///
+    pub rfc931: String,
     #[serde(rename = "authuser")]
-    auth_user: String,
+    pub auth_user: String,
     /// unix timestamp of request
-    date: u64,
+    pub date: u64,
     /// first line of the http request, with the method and path
-    request: String,
+    pub request: String,
     /// http status code of response
-    status: u64,
+    pub status: u64,
     /// bytes length of response
-    bytes: u64,
+    pub bytes: u64,
 }
 
 /// Configuration for a monitor.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 struct MonitorConfig {
     /// number of seconds of log messages to aggregate for stats.
-    stats_window: u64,
+    pub stats_window: u64,
     // number of seconds of log messages to aggregate for alerts.
-    alert_window: u64,
+    pub alert_window: u64,
     // average number of requests per second required to trigger an alert.
-    alert_threshold: u64,
+    pub alert_rate: u64,
 }
 
 impl Default for MonitorConfig {
@@ -54,7 +55,7 @@ impl Default for MonitorConfig {
         Self {
             stats_window: 10,
             alert_window: 120,
-            alert_threshold: 10,
+            alert_rate: 10,
         }
     }
 }
@@ -96,6 +97,26 @@ fn monitor(source: &mut impl Read, sink: &mut impl Write, _config: &MonitorConfi
 /// Tests with no input.
 fn test_monitor_nothing() -> Result<()> {
     let input = "";
+    let expected = "";
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    // XXX: shouldn't this be an error?
+    monitor(&mut source, &mut sink, &config)?;
+
+    let actual = sink.into_inner();
+    let actual = str::from_utf8(&actual)?;
+    assert_eq!(actual, expected);
+    Ok(())
+}
+
+#[test]
+/// Tests with a single request record.
+fn test_monitor_one_request() -> Result<()> {
+    let input = r#""remotehost","rfc931","authuser","date","request","status"
+        "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200"#;
     let expected = "";
 
     let mut source = Cursor::new(input);
@@ -148,8 +169,7 @@ fn test_monitor_invalid_non_csv_input() -> Result<()> {
 fn test_monitor_invalid_csv_input() -> Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status"
         "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
-        "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";
-    "#;
+        "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";"#;
 
     let mut source = Cursor::new(input);
     let mut sink = Cursor::new(Vec::new());
@@ -164,12 +184,11 @@ fn test_monitor_invalid_csv_input() -> Result<()> {
 /// Test that entirely invalid csv input produces an error (extra column in second record).
 #[test]
 fn test_monitor_invalid_csv_input_2() -> Result<()> {
-    let input = r#""remotehost","rfc931","authuser","date","request","statqus","bytes"
+    let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
         "10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
         "10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
         "10.0.0.1","-","apache",1549574334,"GET /api/user HTTP/1.0",200,1194
-        "10.0.0.4","-","apache",1549574334,"POST /report HTTP/1.0",404,1307
-    "#;
+        "10.0.0.4","-","apache",1549574334,"POST /report HTTP/1.0",404,1307"#;
 
     let mut source = Cursor::new(input);
     let mut sink = Cursor::new(Vec::new());
