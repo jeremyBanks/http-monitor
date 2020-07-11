@@ -39,6 +39,14 @@ pub struct RequestRecord {
     pub bytes: u64,
 }
 
+impl RequestRecord {
+    pub fn section(&self) -> &str {
+        let path = self.request.split(' ').nth(1).unwrap_or("/unknown");
+        let section = path.split('/').nth(1).unwrap_or("unknown");
+        section
+    }
+}
+
 /// Configuration for this log monitoring program.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
 pub struct Config {

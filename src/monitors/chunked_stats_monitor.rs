@@ -89,7 +89,11 @@ impl Monitor for ChunkedStatsMonitor {
         self.requests_by_status_code
             .entry(record.status)
             .and_modify(|n| *n += 1)
-            .or_insert(0);
+            .or_insert(1);
+        self.requests_by_section
+            .entry(String::from("/") + record.section())
+            .and_modify(|n| *n += 1)
+            .or_insert(1);
 
         Ok(output)
     }
@@ -104,8 +108,8 @@ impl Monitor for ChunkedStatsMonitor {
 
         if self.request_count > 0 {
             Ok(vec![format!(
-                "{}-{}  |  {:4} requests at {:5.1}rps  |  {:5.1}% in {:<10}  |  80% 200, 10% 302, 20% other",
-                start, end, self.request_count, rate, 12.3, "/users"
+                "{}-{}  |  {:4} requests at {:5.1}rps  |  {:5.1}% in {:<10}  |  80% 200, 10% 302, 20% other\n{:#?}\n{:#?}",
+                start, end, self.request_count, rate, 12.3, "/users", self.requests_by_status_code, self.requests_by_section
             )])
         } else {
             Ok(vec![format!("{}-{}  |  no requests", start, end,)])
