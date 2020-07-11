@@ -2,6 +2,7 @@
   "recommendations": [
     "matklad.rust-analyzer",
     "vadimcn.vscode-lldb",
-    "rust-lang.rust"
+    "rust-lang.rust",
+    "johnpapa.vscode-peacock"
   ]
 }
