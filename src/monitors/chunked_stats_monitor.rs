@@ -100,9 +100,13 @@ impl Monitor for ChunkedStatsMonitor {
         let start = NaiveDateTime::from_timestamp(range.start.try_into().unwrap(), 0);
         let end = NaiveDateTime::from_timestamp(range.end.try_into().unwrap(), 0);
 
-        Ok(vec![format!(
-            "[{} to {}] {} requests (TODO /second), most popular section TODO with TODO% of traffic.",
-            start, end, self.request_count
+        if self.request_count == 0 {
+            Ok(vec![format!("[{} to {}] no requests.", start, end,)])
+        } else {
+            Ok(vec![format!(
+            "[{} to {}] {:4} requests ({:3}/second), most popular section: {:>10} ({:3}%), most common status code: {:3} ({:3}%)",
+            start, end, self.request_count, 0, "users", 100.0, 404, 100.0
         )])
+        }
     }
 }
