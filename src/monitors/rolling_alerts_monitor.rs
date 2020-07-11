@@ -17,6 +17,8 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use thiserror;
 
+use super::models::RequestRecord;
+
 pub struct RollingAlertsModel {
   /// Requests that are in the current alerting window.
   requests: VecDeque<Rc<RequestRecord>>,
