@@ -25,7 +25,7 @@ fn test_monitor_nothing() -> anyhow::Result<()> {
 fn test_monitor_one_request() -> anyhow::Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
 "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200,200"#;
-    let expected = "";
+    let expected = "2019-02-07 21:11:00-21:11:10  |     1 requests at   0.1rps  |  100% in /api         |  100% 200\n";
 
     let mut source = Cursor::new(input);
     let mut sink = Cursor::new(Vec::new());
