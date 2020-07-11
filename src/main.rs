@@ -1,17 +1,11 @@
 use anyhow::{anyhow, Context, Result};
-use argh;
 use csv;
-use serde::Deserialize;
 use serde_derive::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
     io::{stdin, stdout, Cursor, Read, Write},
     str,
 };
-
-#[derive(argh::FromArgs)]
-/// Generates alerts to stdout from HTTP logs via stdin.
-struct Args {}
 
 /// HTTP request record from input
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
