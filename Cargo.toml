@@ -5,6 +5,10 @@ authors = ["Jeremy Banks <_@jeremy.ca>", "Datadog"]
 publish = false
 edition = "2018"
 
+[[bench]]
+name = "sample_input"
+harness = false
+
 [dependencies]
 anyhow = "1.0.31"
 argh = "0.1.3"
@@ -19,3 +23,4 @@ serde = "1.0.114"
 serde_derive = "1.0.114"
 serde_json = "1.0.56"
 thiserror = "1.0.20"
+criterion = "0.3.3"

@@ -72,9 +72,15 @@ pub fn main() -> anyhow::Result<()> {
 
     dd_monitor::monitor_stream(&mut std::io::stdin(), &mut std::io::stdout(), &config)?;
 
-    log::info!("done!");
+    log::info!("done");
 
-    std::thread::sleep(std::time::Duration::from_secs(16 * 60));
+    // To check memory usage, add this sleep so you can ^Z the process
+    // in your terminal and check it with:
+    //   $ top -p "$(pgrep dd-monitor)"
+    // The VIRT and RES columns indicate the number of kilobytes of virtual
+    // and real memory allocated for the process.
+    //
+    // std::thread::sleep(std::time::Duration::from_secs(16 * 60));
 
     Ok(())
 }
