@@ -1,26 +1,13 @@
-// TODO
-#![allow(unused_imports)]
-#![allow(missing_docs, missing_debug_implementations)]
-
 //! Library entry point for dd_monitor.
+#![warn(missing_docs, missing_debug_implementations)]
+
 use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    fmt::{Debug, Display},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    panic::catch_unwind,
-    rc::{Rc, Weak},
+    io::{Read, Write},
+    rc::Rc,
     str,
-    sync::Arc,
 };
 
-use anyhow::{anyhow, ensure, Context};
-use atty;
-use csv;
-use serde::{Deserialize, Serialize};
-use serde_derive::{Deserialize, Serialize};
-use thiserror;
+use anyhow::ensure;
 
 mod models;
 mod monitors;

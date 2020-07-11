@@ -1,21 +1,6 @@
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    fmt::{Debug, Display},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    net::Ipv4Addr,
-    rc::{Rc, Weak},
-    str,
-    sync::Arc,
-};
+use std::{fmt::Debug, net::Ipv4Addr, str};
 
-use anyhow::{anyhow, Context};
-use atty;
-use csv;
-use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize, Serialize};
-use thiserror;
 
 /// HTTP request record from input.
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]

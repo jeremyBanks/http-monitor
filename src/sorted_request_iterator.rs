@@ -2,7 +2,6 @@ use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     collections::{BinaryHeap, VecDeque},
     iter::{Enumerate, FusedIterator},
-    rc::Rc,
 };
 
 use itertools::Itertools;
@@ -13,6 +12,7 @@ use crate::{Config, RequestRecord};
 ///
 /// Panics if a request has a timestamp more than buffer_seconds less than the
 /// greatest previous timestamp.
+#[derive(Debug)]
 pub struct SortedRequestIterator<T: Iterator<Item = RequestRecord>> {
     /// The iterator being wrapped.
     iterator: Enumerate<T>,

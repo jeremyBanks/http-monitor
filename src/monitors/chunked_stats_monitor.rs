@@ -1,24 +1,7 @@
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    convert::TryInto,
-    fmt::{Debug, Display},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    ops::Range,
-    rc::{Rc, Weak},
-    str,
-    sync::Arc,
-};
+use std::{collections::HashMap, convert::TryInto, fmt::Debug, ops::Range, rc::Rc};
 
-use anyhow::{ensure, Context};
-use atty;
 use chrono::NaiveDateTime;
-use csv;
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
-use serde_derive::{Deserialize, Serialize};
-use thiserror;
 
 use crate::{Config, Monitor, RequestRecord};
 
