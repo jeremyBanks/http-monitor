@@ -34,10 +34,16 @@ pub struct ChunkedStatsMonitor {
 }
 
 impl ChunkedStatsMonitor {
-    fn maybe_flush_before(&mut self, record: &RequestRecord) -> anyhow::Result<()> {
-        self.requests.clear();
-
-        Ok(())
+    fn maybe_flush_before(&mut self, record: &RequestRecord) -> anyhow::Result<Vec<String>> {
+        // TODO: I was going to count from the timestamp of the first record,
+        // that could leave gaps between records...
+        if let Some(first) record.date {
+            let results = self.pending()?;
+            self.requests.clear();
+            Ok(results)
+        else {
+            Ok(Vec::new())
+        }
     }
 }
 
@@ -59,6 +65,10 @@ impl Monitor for ChunkedStatsMonitor {
             .and_modify(|n| *n += 1)
             .or_insert(0);
 
+        Ok(Vec::new())
+    }
+
+    fn pending(&mut self) -> anyhow::Result<Vec<String>> {
         Ok(Vec::new())
     }
 }
