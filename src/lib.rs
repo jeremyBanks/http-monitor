@@ -1,30 +1,15 @@
 //! Package entry point for dd-monitor.
 
-#![allow(unused_imports)]
+use std::io::{stdin, stdout};
 
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    rc::Rc,
-    str,
-    sync::Arc,
-};
-
-use anyhow::{anyhow, Context, Result};
+use anyhow::Result;
 use atty;
-use csv;
-use serde::{Deserialize, Serialize};
-use serde_derive::{Deserialize, Serialize};
-use serde_json;
-use thiserror;
 
 mod monitor;
 
 pub use monitor::{monitor, MonitorConfig};
 
-/// Application entry point.
+/// Runs a monitor from stdin to stdout with the default configuration.
 pub fn main() -> Result<()> {
     if atty::is(atty::Stream::Stdin) {
         eprintln!("ERROR: stdin must be a stream or file, not a terminal.");

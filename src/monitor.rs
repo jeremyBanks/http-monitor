@@ -18,6 +18,16 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use thiserror;
 
+const CSV_HEADERS: [&str; 7] = [
+    "remotehost",
+    "rfc931",
+    "authuser",
+    "date",
+    "request",
+    "status",
+    "bytes",
+];
+
 /// HTTP request record from input
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct RequestRecord {
@@ -72,19 +82,10 @@ pub fn monitor(
     // We need to manually check the headers to cover the edge case that we have a file
     // with headers, but no rows. Serde will implicitly check the headers when deserializing
     // a row into a struct, but if there are no rows the invalid headers would be ignored.
-    let expected_headers = &[
-        "remotehost",
-        "rfc931",
-        "authuser",
-        "date",
-        "request",
-        "status",
-        "bytes",
-    ][..];
-    if reader.headers()? != *expected_headers {
+    if reader.headers()? != *&CSV_HEADERS[..] {
         return Err(anyhow!(
             "expected headers {:?}, but got {:?}",
-            &expected_headers,
+            CSV_HEADERS,
             reader.headers()?
         ));
     }
