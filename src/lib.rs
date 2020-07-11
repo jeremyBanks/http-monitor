@@ -97,6 +97,13 @@ pub fn monitor_stream(
         }
     }
 
+    for monitor in monitors.iter_mut() {
+        let output = monitor.pending()?;
+        for line in output {
+            writeln!(sink, "{}", &line)?;
+        }
+    }
+
     log::debug!("monitors (final state): {:#?}", monitors);
 
     Ok(())

@@ -2,6 +2,7 @@ use std::{
     borrow::Cow,
     cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
+    convert::TryInto,
     fmt::{Debug, Display},
     io::{stderr, stdin, stdout, Cursor, Read, Write},
     ops::Range,
@@ -12,6 +13,7 @@ use std::{
 
 use anyhow::{ensure, Context};
 use atty;
+use chrono::NaiveDateTime;
 use csv;
 use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize, Serialize};
@@ -29,7 +31,7 @@ pub struct ChunkedStatsMonitor {
     /// The range of timestamps included in the pending chunk.
     /// Will be None if we haven't had any chunks yet, so we
     /// don't have any timestamp.
-    chunk_timestamps: Option<Range<u32>>,
+    requests_time_range: Option<Range<u32>>,
 
     /// Request counts for the current chunk.
     request_count: u64,
@@ -41,27 +43,27 @@ impl ChunkedStatsMonitor {
     fn maybe_flush_before(&mut self, record: &RequestRecord) -> anyhow::Result<Vec<String>> {
         // If this is the first record we're seeing, use it for the starting time
         // of the first chunk.
-        let mut chunk_timestamps = self
-            .chunk_timestamps
+        let mut requests_time_range = self
+            .requests_time_range
             .clone()
             .unwrap_or_else(|| record.date..(record.date + self.chunk_seconds));
 
-        ensure!(
-            record.date >= chunk_timestamps.start,
-            "records must be in chronological order but the next record, {:?}, occurs before the start of the current range, {:?}",
-            &record,
-            &chunk_timestamps
-        );
-
         let mut output = Vec::new();
-        while !chunk_timestamps.contains(&record.date) {
+        while !requests_time_range.contains(&record.date) {
             output.append(&mut self.pending()?);
-            self.requests.clear();
 
-            chunk_timestamps = chunk_timestamps.end..(chunk_timestamps.end + self.chunk_seconds);
+            if !self.requests.is_empty() {
+                self.requests.clear();
+                self.request_count = 0;
+                self.requests_by_status_code.clear();
+                self.requests_by_section.clear();
+            }
+
+            requests_time_range =
+                requests_time_range.end..(requests_time_range.end + self.chunk_seconds);
         }
 
-        self.chunk_timestamps = Some(chunk_timestamps);
+        self.requests_time_range = Some(requests_time_range);
 
         Ok(output)
     }
@@ -72,7 +74,7 @@ impl Monitor for ChunkedStatsMonitor {
         Self {
             chunk_seconds: config.stats_window,
             requests: Vec::new(),
-            chunk_timestamps: None,
+            requests_time_range: None,
             request_count: 0,
             requests_by_status_code: HashMap::new(),
             requests_by_section: HashMap::new(),
@@ -80,7 +82,7 @@ impl Monitor for ChunkedStatsMonitor {
     }
 
     fn push(&mut self, record: &std::rc::Rc<RequestRecord>) -> anyhow::Result<Vec<String>> {
-        self.maybe_flush_before(record)?;
+        let output = self.maybe_flush_before(record)?;
 
         self.requests.push(record.clone());
         self.request_count += 1;
@@ -89,10 +91,18 @@ impl Monitor for ChunkedStatsMonitor {
             .and_modify(|n| *n += 1)
             .or_insert(0);
 
-        Ok(Vec::new())
+        Ok(output)
     }
 
     fn pending(&mut self) -> anyhow::Result<Vec<String>> {
-        Ok(vec![format!("{:#?}", self)])
+        let range = self.requests_time_range.as_ref().unwrap();
+
+        let start = NaiveDateTime::from_timestamp(range.start.try_into().unwrap(), 0);
+        let end = NaiveDateTime::from_timestamp(range.end.try_into().unwrap(), 0);
+
+        Ok(vec![format!(
+            "[{} to {}] {} requests (TODO /second), most popular section TODO with TODO% of traffic.",
+            start, end, self.request_count
+        )])
     }
 }
