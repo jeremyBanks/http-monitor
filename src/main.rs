@@ -164,9 +164,42 @@ fn test_monitor_invalid_non_csv_input() -> Result<()> {
     Ok(())
 }
 
-/// Test that entirely invalid csv input produces an error (last column missing).
+/// Test that entirely invalid csv input produces an error
 #[test]
+#[ignore = "
+    not implemented: the csv crate doesn't validate the header until it gets a data row.
+"]
 fn test_monitor_invalid_csv_input() -> Result<()> {
+    let input = r#"241"#;
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    let result = monitor(&mut source, &mut sink, &config);
+
+    assert!(result.is_err());
+    Ok(())
+}
+#[test]
+fn test_monitor_invalid_csv_input_wrong() -> Result<()> {
+    let input = r#"241
+        123
+        456"#;
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    let result = monitor(&mut source, &mut sink, &config);
+
+    assert!(result.is_err());
+    Ok(())
+}
+
+/// Test that invalid csv input produces an error (last column missing).
+#[test]
+fn test_monitor_invalid_csv_input_missing_column() -> Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status"
         "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
         "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";"#;
@@ -183,7 +216,7 @@ fn test_monitor_invalid_csv_input() -> Result<()> {
 
 /// Test that entirely invalid csv input produces an error (extra column in second record).
 #[test]
-fn test_monitor_invalid_csv_input_2() -> Result<()> {
+fn test_monitor_invalid_csv_input_extra_column() -> Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
         "10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
         "10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
