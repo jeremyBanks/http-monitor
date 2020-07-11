@@ -77,8 +77,6 @@ pub fn monitor(
 ) -> Result<()> {
     let mut reader = csv::ReaderBuilder::new().from_reader(source);
 
-    let _previous: Option<RequestRecord> = None;
-
     // We need to manually check the headers to cover the edge case that we have a file
     // with headers, but no rows. Serde will implicitly check the headers when deserializing
     // a row into a struct, but if there are no rows the invalid headers would be ignored.
@@ -90,9 +88,14 @@ pub fn monitor(
         ));
     }
 
-    for result in reader.deserialize() {
-        let record: RequestRecord = result?;
-        writeln!(sink, "{:?}", record)?;
+    let mut stats_window = VecDeque::<RequestRecord>::new();
+    let mut alert_window = VecDeque::<RequestRecord>::new();
+
+    for record in reader.deserialize() {
+        let record: RequestRecord = record?;
+
+        stats_window.push_back(record.clone());
+        alert_window.push_back(record.clone());
     }
 
     Ok(())
