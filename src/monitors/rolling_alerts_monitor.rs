@@ -44,12 +44,12 @@ impl Monitor for RollingAlertsMonitor {
 
         self.requests.push_back(record.clone());
 
-        if self.requests.len() == 1 {
-            output.push(format!("2019-02-07 21:17:45   ALERT   |  oh shit"));
+        if self.requests.len() == 1000 {
+            output.push(format!("2019-02-07 21:17:45 ALERT-----+------> average of  10.1rps over last 120 seconds exceeds threshold of   10.0rps <--"));
         }
 
-        if self.requests.len() == 1000 {
-            output.push(format!("2019-02-07 21:17:45 recovered |  we good"));
+        if self.requests.len() == 3000 {
+            output.push(format!("2019-02-07 21:17:45 RECOVERY--+------> average of   7.0rps over last 120 seconds is below threshold of  10.0rps <--"));
         }
 
         Ok(output)
