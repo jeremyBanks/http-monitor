@@ -5,11 +5,11 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct RequestRecordTuple(
     /// unused
-    (),
+    String,
     /// unused
-    (),
+    String,
     /// unused
-    (),
+    String,
     /// date
     u32,
     /// request

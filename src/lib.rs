@@ -36,14 +36,8 @@ pub fn monitor_stream(
     sink: &mut impl Write,
     config: &Config,
 ) -> anyhow::Result<()> {
-    let mut source = BufReader::new(source);
-    // skip the header because it slows serde down
-    let mut header = String::new();
-    source.read_line(&mut header)?;
-    log::debug!("skipping header row: {}", header);
-
     let mut reader = csv::ReaderBuilder::new()
-        .has_headers(false)
+        .has_headers(true)
         .from_reader(source);
 
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
