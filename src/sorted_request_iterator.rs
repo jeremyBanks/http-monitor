@@ -13,12 +13,12 @@ use crate::{Config, RequestRecord};
 ///
 /// Panics if a request has a timestamp more than buffer_seconds less than the
 /// greatest previous timestamp.
-pub struct SortedRequestIterator<T: Iterator<Item = Rc<RequestRecord>>> {
+pub struct SortedRequestIterator<T: Iterator<Item = RequestRecord>> {
     /// The iterator being wrapped.
     iterator: Enumerate<T>,
     /// Records whose order is now known, but haven't yet been read out of this iterator.
     /// (Timestamps will be more than buffer_seconds before largest_timestamp.)
-    sorted: VecDeque<Rc<RequestRecord>>,
+    sorted: VecDeque<RequestRecord>,
     /// Records whose order is still indeterminate.
     /// (Timestamps will be within buffer_seconds of largest_timestamp.)
     unsorted: BinaryHeap<ChronologicalRecord>,
@@ -33,7 +33,7 @@ pub struct SortedRequestIterator<T: Iterator<Item = Rc<RequestRecord>>> {
 /// Since BinaryHeap is a max heap, this sorts the values we want first, last.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ChronologicalRecord {
-    record: Rc<RequestRecord>,
+    record: RequestRecord,
     index: usize,
 }
 
@@ -49,8 +49,8 @@ impl Ord for ChronologicalRecord {
     }
 }
 
-impl<T: Iterator<Item = Rc<RequestRecord>>> SortedRequestIterator<T> {
-    pub fn new(iterator: T, config: Config) -> Self {
+impl<T: Iterator<Item = RequestRecord>> SortedRequestIterator<T> {
+    pub fn new(iterator: T, config: &Config) -> Self {
         Self {
             iterator: iterator.enumerate(),
             buffer_seconds: 2 * config.maximum_timestamp_error,
@@ -61,10 +61,10 @@ impl<T: Iterator<Item = Rc<RequestRecord>>> SortedRequestIterator<T> {
     }
 }
 
-impl<T: Iterator<Item = Rc<RequestRecord>>> Iterator for SortedRequestIterator<T> {
-    type Item = Rc<RequestRecord>;
+impl<T: Iterator<Item = RequestRecord>> Iterator for SortedRequestIterator<T> {
+    type Item = RequestRecord;
 
-    fn next(&mut self) -> Option<Rc<RequestRecord>> {
+    fn next(&mut self) -> Option<RequestRecord> {
         while self.sorted.is_empty() {
             // Otherwise, see if there are any more items in the source iterator.
             let next = self.iterator.next();
@@ -109,4 +109,16 @@ impl<T: Iterator<Item = Rc<RequestRecord>>> Iterator for SortedRequestIterator<T
     }
 }
 
-impl<T: Iterator<Item = Rc<RequestRecord>>> FusedIterator for SortedRequestIterator<T> {}
+impl<T: Iterator<Item = RequestRecord>> FusedIterator for SortedRequestIterator<T> {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_iter() {
+        let results: Vec<_> =
+            SortedRequestIterator::new(Vec::new().into_iter(), &Config::default()).collect();
+        assert_eq!(results, vec![]);
+    }
+}

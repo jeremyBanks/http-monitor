@@ -79,11 +79,11 @@ pub fn monitor_stream(
 
     let rows = reader.deserialize::<RequestRecord>();
 
-    let ordered_records = SortedRequestIterator::new(rows, &config);
+    let ordered_records =
+        SortedRequestIterator::new(rows.map(|row| row.expect("row should be valid")), config);
 
-    for record in  {
-        let record = Rc::new(record?);
-
+    for record in ordered_records {
+        let record = Rc::new(record);
         for monitor in monitors.iter_mut() {
             let output = monitor.push(&record)?;
             for line in output {

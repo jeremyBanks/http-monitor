@@ -41,7 +41,7 @@ impl Monitor for RollingAlertsMonitor {
     }
 
     fn push(&mut self, record: &std::rc::Rc<RequestRecord>) -> anyhow::Result<Vec<String>> {
-        let mut output = Vec::new();
+        let output = Vec::new();
 
         self.requests.push_back(record.clone());
 
