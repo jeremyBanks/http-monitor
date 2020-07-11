@@ -45,11 +45,11 @@ pub fn main() -> anyhow::Result<()> {
             "stdin must be a stream or file, not a terminal.
             
             example usage:
-                cargo run < sample_input.csv
+                cargo run < samples/input.csv
             
             or with a release binary:
                 cargo build --release
-                target/release/dd-monitor < sample_input.cs
+                target/release/dd-monitor < samples/input.cs
             "
         );
 

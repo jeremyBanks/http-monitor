@@ -43,8 +43,8 @@ fn test_monitor_one_request() -> anyhow::Result<()> {
 #[test]
 #[ignore = "not implemented"]
 fn test_monitor_sample_input() -> anyhow::Result<()> {
-    let input = &include_str!("../sample_input.csv")[..];
-    let expected = "";
+    let input = &include_str!("../samples/input.csv")[..];
+    let expected = &include_str!("../samples/output.txt")[..];
 
     let mut source = Cursor::new(input);
     let mut sink = Cursor::new(Vec::new());

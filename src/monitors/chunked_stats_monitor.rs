@@ -98,15 +98,17 @@ impl Monitor for ChunkedStatsMonitor {
         let range = self.requests_time_range.as_ref().unwrap();
 
         let start = NaiveDateTime::from_timestamp(range.start.try_into().unwrap(), 0);
-        let end = NaiveDateTime::from_timestamp(range.end.try_into().unwrap(), 0);
+        let end = NaiveDateTime::from_timestamp(range.end.try_into().unwrap(), 0).time();
 
-        if self.request_count == 0 {
-            Ok(vec![format!("[{} to {}] no requests.", start, end,)])
-        } else {
+        let rate = self.request_count as f64 / self.chunk_seconds as f64;
+
+        if self.request_count > 0 {
             Ok(vec![format!(
-            "[{} to {}] {:4} requests ({:3}/second), most popular section: {:>10} ({:3}%), most common status code: {:3} ({:3}%)",
-            start, end, self.request_count, 0, "users", 100.0, 404, 100.0
-        )])
+                "{}-{}  |  {:4} requests at {:5.1}rps  |  {:5.1}% in {:<10}  |  80% 200, 10% 302, 20% other",
+                start, end, self.request_count, rate, 12.3, "/users"
+            )])
+        } else {
+            Ok(vec![format!("{}-{}  |  no requests", start, end,)])
         }
     }
 }

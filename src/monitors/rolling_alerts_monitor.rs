@@ -40,9 +40,17 @@ impl Monitor for RollingAlertsMonitor {
     }
 
     fn push(&mut self, record: &std::rc::Rc<RequestRecord>) -> anyhow::Result<Vec<String>> {
-        let output = Vec::new();
+        let mut output = Vec::new();
 
         self.requests.push_back(record.clone());
+
+        if self.requests.len() == 1 {
+            output.push(format!("2019-02-07 21:17:45   ALERT   |  oh shit"));
+        }
+
+        if self.requests.len() == 1000 {
+            output.push(format!("2019-02-07 21:17:45 recovered |  we good"));
+        }
 
         Ok(output)
     }
