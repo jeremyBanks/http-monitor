@@ -2,18 +2,38 @@ use std::{fmt::Debug, net::Ipv4Addr, str};
 
 use serde_derive::{Deserialize, Serialize};
 
+#[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
+pub struct RequestRecordTuple(
+    /// unused
+    (),
+    /// unused
+    (),
+    /// unused
+    (),
+    /// date
+    u32,
+    /// request
+    String,
+    /// status
+    u16,
+    /// bytes
+    u64,
+);
+
+impl RequestRecordTuple {
+    pub fn untuple(self) -> RequestRecord {
+        RequestRecord {
+            date: self.3,
+            request: self.4,
+            status: self.5,
+            bytes: self.6,
+        }
+    }
+}
+
 /// HTTP request record from input.
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct RequestRecord {
-    /// IP address that the request came from.
-    #[serde(rename = "remotehost")]
-    pub remote_host: Ipv4Addr,
-    /// Unused, included for compatibility.
-    #[serde(skip)]
-    pub rfc931: (),
-    /// Unused, included for compatibility.
-    #[serde(skip, rename = "authuser")]
-    pub auth_user: (),
     /// Unix timestamp of request.
     pub date: u32,
     /// First line of the http request, with the method and path.

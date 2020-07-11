@@ -2,7 +2,7 @@
 #![warn(missing_docs, missing_debug_implementations)]
 
 use std::{
-    io::{Read, Write},
+    io::{BufRead, BufReader, Read, Write},
     rc::Rc,
     str,
 };
@@ -13,20 +13,9 @@ mod models;
 mod monitors;
 mod sorted_request_iterator;
 
-pub use self::models::{Config, RequestRecord};
+pub use self::models::{Config, RequestRecord, RequestRecordTuple};
 pub use self::monitors::{ChunkedStatsMonitor, Monitor, RollingAlertsMonitor};
 pub use self::sorted_request_iterator::SortedRequestIterator;
-
-/// The headers expected in the CSV input data.
-const CSV_HEADERS: [&str; 7] = [
-    "remotehost",
-    "rfc931",
-    "authuser",
-    "date",
-    "request",
-    "status",
-    "bytes",
-];
 
 // TODO: load config from json
 impl Default for Config {
@@ -47,19 +36,15 @@ pub fn monitor_stream(
     sink: &mut impl Write,
     config: &Config,
 ) -> anyhow::Result<()> {
-    let mut reader = csv::Reader::from_reader(source);
+    let mut source = BufReader::new(source);
+    // skip the header because it slows serde down
+    let mut header = String::new();
+    source.read_line(&mut header)?;
+    log::debug!("skipping header row: {}", header);
 
-    // We need to manually check the headers to cover the edge case that we have a file
-    // with headers, but no rows. (Serde will implicitly check the headers when deserializing
-    // a row into a struct, but if there are no rows the invalid headers would be ignored.)
-    ensure!(
-        reader.headers()? == *&CSV_HEADERS[..],
-        "expected headers {:?}, but got {:?}",
-        CSV_HEADERS,
-        reader.headers()?
-    );
-
-    log::debug!("validated headers");
+    let mut reader = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .from_reader(source);
 
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
         Box::new(ChunkedStatsMonitor::from_config(&config)),
@@ -68,10 +53,12 @@ pub fn monitor_stream(
 
     log::debug!("monitors (initial state): {:#?}", monitors);
 
-    let rows = reader.deserialize::<RequestRecord>();
+    let rows = reader.deserialize::<RequestRecordTuple>();
 
-    let ordered_records =
-        SortedRequestIterator::new(rows.map(|row| row.expect("row should be valid")), config);
+    let ordered_records = SortedRequestIterator::new(
+        rows.map(|row| row.expect("row should be valid").untuple()),
+        config,
+    );
 
     for record in ordered_records {
         let record = Rc::new(record);
