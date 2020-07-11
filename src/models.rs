@@ -51,4 +51,6 @@ pub struct Config {
     pub alert_window: u32,
     /// Average number of requests per second required to trigger an alert.
     pub alert_rate: u32,
+    /// The margin of error on a record's timestamp, in seconds.
+    pub maximum_timestamp_error: u32,
 }

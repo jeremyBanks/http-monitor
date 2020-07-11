@@ -1,6 +1,6 @@
-// TODO: trim imports once we're done
+// TODO
 #![allow(unused_imports)]
-#![warn(missing_docs, missing_debug_implementations)]
+#![allow(missing_docs, missing_debug_implementations)]
 
 //! Library entry point for dd_monitor.
 use std::{
@@ -24,6 +24,7 @@ use thiserror;
 
 mod models;
 mod monitors;
+mod sorted_request_iterator;
 
 pub use crate::models::{Config, RequestRecord};
 pub use monitors::{ChunkedStatsMonitor, Monitor, RollingAlertsMonitor};
@@ -47,6 +48,7 @@ impl Default for Config {
             stats_window: 10,
             alert_window: 120,
             alert_rate: 10,
+            maximum_timestamp_error: 1,
         }
     }
 }
@@ -70,7 +72,6 @@ pub fn monitor_stream(
     );
 
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
-        // TODO: pass config into these as appropriate
         Box::new(ChunkedStatsMonitor::from_config(&config)),
         Box::new(RollingAlertsMonitor::from_config(&config)),
     ];
