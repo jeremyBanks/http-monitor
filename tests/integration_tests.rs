@@ -1,4 +1,4 @@
-//! Integration tests for dd-monitor.
+//! Integration tests for dd-monitor, asserting the expected outputs for given inputs.
 
 use std::{
   borrow::Cow,
