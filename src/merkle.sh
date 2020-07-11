@@ -26,7 +26,7 @@ env='export GIT_HEIGHT="$(git rev-list --count "${GIT_COMMIT:-HEAD}")" ;\
   export GIT_AUTHOR_NAME="${GIT_COMMITTER_NAME}" ;\
   export GIT_AUTHOR_EMAIL="${GIT_COMMITTER_EMAIL}" ;\
   export GIT_TREE_HASH="$(git rev-parse --short=8 ${GIT_COMMIT:-HEAD}^{tree})" ;\
-  export GIT_MESSAGE="$(printf r%s:\ %s "$(git rev-list --count HEAD)" "$(git write-tree | python3 -c '"'"'print(" ".join(list(filter(bool, (dict(a="alfa", b="bravo", c="charlie", d="delta", e="echo", f="foxtrot", **{"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine"}).get(c, "") for c in __import__("sys").stdin.read().lower())))[:4]))'"'"')")" ;\
+  export GIT_MESSAGE="$(printf r%s:\ %s "$(git rev-list --count ${GIT_COMMIT:-HEAD})" "$(git write-tree | python3 -c '"'"'print(" ".join(list(filter(bool, (dict(a="alfa", b="bravo", c="charlie", d="delta", e="echo", f="foxtrot", **{"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine"}).get(c, "") for c in __import__("sys").stdin.read().lower())))[:4]))'"'"')")" ;\
   true';
 
 FILTER_BRANCH_SQUELCH_WARNING=true git filter-branch --force --env-filter "${env}" --msg-filter "${env}; echo \${GIT_MESSAGE}" "$@" || echo "I hope that wasn't an error!" 1>&2;
