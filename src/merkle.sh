@@ -17,10 +17,10 @@ if [[ ! "${MERKLE_NO_CONFIRM:-}" =~ ^[Yy]$ ]]; then
 fi
 
 env='export GIT_HEIGHT="$(git rev-list --count "${GIT_COMMIT:-HEAD}")" ;\
-  export GIT_COMMITTER_TIMESTAMP="$((1577836800 + (20 + 60 * 20) * (${GIT_HEIGHT} - 1) ))" ;\
+  export GIT_COMMITTER_TIMESTAMP="$((1594424000 + (20 + 60 * 20) * (${GIT_HEIGHT} - 1) ))" ;\
   export GIT_COMMITTER_DATE="$(date -ud @"${GIT_COMMITTER_TIMESTAMP}")" ;\
-  export GIT_COMMITTER_NAME="user" ;\
-  export GIT_COMMITTER_EMAIL="\<user@localhost\>" ;\
+  export GIT_COMMITTER_NAME="Jeremy Banks" ;\
+  export GIT_COMMITTER_EMAIL="\<_@jeremy.ca\>" ;\
   export GIT_AUTHOR_TIMESTAMP="${GIT_COMMITTER_TIMESTAMP}" ;\
   export GIT_AUTHOR_DATE="${GIT_COMMITTER_DATE}" ;\
   export GIT_AUTHOR_NAME="${GIT_COMMITTER_NAME}" ;\
