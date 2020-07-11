@@ -1,7 +1,7 @@
 use std::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     collections::{BinaryHeap, VecDeque},
-    iter::{Fuse, FusedIterator},
+    iter::{Enumerate, FusedIterator},
     rc::Rc,
 };
 
@@ -13,7 +13,7 @@ use crate::{Config, RequestRecord};
 /// greatest previous timestamp.
 pub struct SortedRequestIterator<T: Iterator<Item = Rc<RequestRecord>>> {
     /// The iterator being wrapped.
-    iterator: Fuse<T>,
+    iterator: Enumerate<T>,
     /// Records whose order is now known, but haven't yet been read out of this iterator.
     /// (Timestamps will be more than buffer_seconds before largest_timestamp.)
     sorted: VecDeque<Rc<RequestRecord>>,
@@ -51,9 +51,10 @@ impl<T: Iterator<Item = Rc<RequestRecord>>> SortedRequestIterator<T> {
     pub fn new(iterator: T, config: Config) -> Self {
         Self {
             iterator: iterator.fuse(),
-            buffer: BinaryHeap::new(),
             buffer_seconds: 2 * config.maximum_timestamp_error,
             largest_timestamp: 0,
+            sorted: VecDeque::new(),
+            unsorted: BinaryHeap::new(),
         }
     }
 }
@@ -64,7 +65,12 @@ impl<T: Iterator<Item = Rc<RequestRecord>>> Iterator for SortedRequestIterator<T
     fn next(&mut self) -> Option<Rc<RequestRecord>> {
         if let Some(record) = self.sorted.pop_front() {
             Some(record)
-        } else if let Some(record) = self.iterator.next() 
+        } else if let Some((index, record)) = self.iterator.next() {
+            if record.date > self.largest_timestamp {
+            } else {
+                self.unsorted.push(ChronologicalRecord { record, index })
+            }
+
             if record.date > self.largest_timestamp + self.buffer_seconds {}
 
             assert!(record.date > self.buffer_minimum_timestamp);

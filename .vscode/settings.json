@@ -23,7 +23,7 @@
     "editorGroup.border": "#7b3acb",
     "panel.border": "#7b3acb",
     "sideBar.border": "#7b3acb"
-  },
+},
   "peacock.affectTabActiveBorder": true,
   "peacock.affectActivityBar": false,
   "peacock.affectAccentBorders": true,
