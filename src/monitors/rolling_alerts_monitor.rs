@@ -14,7 +14,6 @@ use atty;
 use csv;
 use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
 use thiserror;
 
 use crate::{Config, Monitor, RequestRecord};

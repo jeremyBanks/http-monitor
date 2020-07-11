@@ -1,22 +1,8 @@
 //! Integration tests for dd-monitor, asserting the expected outputs for given inputs.
 
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    rc::Rc,
-    str,
-    sync::Arc,
-};
+use std::{io::Cursor, str};
 
-use anyhow::{anyhow, Context};
-use atty;
-use csv;
-use serde::{Deserialize, Serialize};
-use serde_derive::{Deserialize, Serialize};
-use serde_json;
-use thiserror;
+use anyhow;
 
 use dd_monitor::{monitor_stream, Config};
 

@@ -5,6 +5,14 @@ authors = ["Jeremy Banks <_@jeremy.ca>", "Datadog"]
 publish = false
 edition = "2018"
 
+[lib]
+name = "dd_monitor"
+path = "src/lib.rs"
+
+[[bin]]
+name = "dd-monitor"
+path = "src/main.rs"
+
 [[bench]]
 name = "sample_input"
 harness = false
