@@ -7,7 +7,7 @@ use atty;
 
 mod monitor;
 
-pub use monitor::{monitor, MonitorConfig};
+pub use monitor::{monitor_stream, MonitorConfig};
 
 /// Runs a monitor from stdin to stdout with the default configuration.
 pub fn main() -> Result<()> {
@@ -26,5 +26,5 @@ pub fn main() -> Result<()> {
 
     let config = MonitorConfig::default();
 
-    monitor(&mut stdin(), &mut stdout(), &config)
+    monitor_stream(&mut stdin(), &mut stdout(), &config)
 }

@@ -1,52 +1,6 @@
-#![allow(unused_imports)]
-
-use std::{
-    borrow::Cow,
-    cell::{Cell, RefCell},
-    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    io::{stderr, stdin, stdout, Cursor, Read, Write},
-    rc::Rc,
-    str,
-    sync::Arc,
-};
-
-use anyhow::{anyhow, Context};
-use atty;
-use csv;
-use serde::{Deserialize, Serialize};
-use serde_derive::{Deserialize, Serialize};
-use serde_json;
-use thiserror;
-
-const CSV_HEADERS: [&str; 7] = [
-    "remotehost",
-    "rfc931",
-    "authuser",
-    "date",
-    "request",
-    "status",
-    "bytes",
-];
-
-/// HTTP request record from input
-#[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
-pub struct RequestRecord {
-    /// client host that the request came from
-    #[serde(rename = "remotehost")]
-    pub remote_host: String,
-    ///
-    pub rfc931: String,
-    #[serde(rename = "authuser")]
-    pub auth_user: String,
-    /// unix timestamp of request
-    pub date: u64,
-    /// first line of the http request, with the method and path
-    pub request: String,
-    /// http status code of response
-    pub status: u64,
-    /// bytes length of response
-    pub bytes: u64,
-}
+mod chunked_stats_monitor;
+mod monitor;
+mod rolling_alerts_monitor;
 
 /// Configuration for a monitor.
 #[derive(Debug, Deserialize, Serialize, Clone, Eq, PartialEq)]
@@ -61,8 +15,22 @@ pub struct MonitorConfig {
     pub alert_rate: u64,
 }
 
-trait Monitor {
-    fn push(&mut self, record: &Rc<RequestRecord>) -> anyhow::Result<()>;
+#[derive(Debug, Default)]
+struct ChunkedStatsMonitor {}
+
+impl Monitor for ChunkedStatsMonitor {
+    fn push(&mut self, record: &Rc<RequestRecord>) -> anyhow::Result<()> {
+        unimplemented!()
+    }
+}
+
+#[derive(Debug, Default)]
+struct RollingAlertsMonitor {}
+
+impl Monitor for RollingAlertsMonitor {
+    fn push(&mut self, record: &Rc<RequestRecord>) -> anyhow::Result<()> {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -112,8 +80,10 @@ pub fn monitor_stream(
         ));
     }
 
-    let mut monitors: Vec<Box<dyn Monitor>> =
-        vec![Box::new(StatsBatchMonitor), Box::new(AlertsRollingMonitor)];
+    let mut monitors: Vec<Box<dyn Monitor>> = vec![
+        Box::new(ChunkedStatsMonitor::default()),
+        Box::new(AlertsRollingMonitor::default()),
+    ];
 
     let mut alert_window = VecDeque::new();
     let mut alert_state = AlertState::default();
