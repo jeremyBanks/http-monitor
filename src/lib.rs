@@ -9,12 +9,13 @@ use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
     fmt::{Debug, Display},
     io::{stderr, stdin, stdout, Cursor, Read, Write},
+    panic::catch_unwind,
     rc::{Rc, Weak},
     str,
     sync::Arc,
 };
 
-use anyhow::{ensure, Context};
+use anyhow::{anyhow, ensure, Context};
 use atty;
 use csv;
 use serde::{Deserialize, Serialize};

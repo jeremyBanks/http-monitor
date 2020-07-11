@@ -1,6 +1,6 @@
 //! Integration tests for dd-monitor, asserting the expected outputs for given inputs.
 
-use std::{io::Cursor, str};
+use std::{io::Cursor, panic::catch_unwind, str};
 
 use anyhow;
 
@@ -25,7 +25,7 @@ fn test_monitor_nothing() -> anyhow::Result<()> {
 #[ignore = "not implemented"]
 fn test_monitor_one_request() -> anyhow::Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
-        "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200,200"#;
+"10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200,200"#;
     let expected = "";
 
     let mut source = Cursor::new(input);
@@ -104,8 +104,8 @@ fn test_monitor_invalid_csv_input_3() -> anyhow::Result<()> {
 #[test]
 fn test_monitor_invalid_csv_input_4() -> anyhow::Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status"
-        "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
-        "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";"#;
+"10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
+"10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";"#;
 
     let mut source = Cursor::new(input);
     let mut sink = Cursor::new(Vec::new());
@@ -120,17 +120,20 @@ fn test_monitor_invalid_csv_input_4() -> anyhow::Result<()> {
 #[test]
 fn test_monitor_invalid_csv_input_extra_column() -> anyhow::Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
-        "10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
-        "10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
-        "10.0.0.1","-","apache",1549574334,"GET /api/user HTTP/1.0",200,1194
-        "10.0.0.4","-","apache",1549574334,"POST /report HTTP/1.0",404,1307"#;
+"10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
+"10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
+"10.0.0.1","-","apache",1549574334,"GET /api/user HTTP/1.0",200,1194
+"10.0.0.4","-","apache",1549574334,"POST /report HTTP/1.0",404,1307"#;
 
-    let mut source = Cursor::new(input);
-    let mut sink = Cursor::new(Vec::new());
-    let config = Config::default();
+    let result = catch_unwind(|| {
+        let mut source = Cursor::new(input);
+        let mut sink = Cursor::new(Vec::new());
+        let config = Config::default();
 
-    let result = monitor_stream(&mut source, &mut sink, &config);
+        monitor_stream(&mut source, &mut sink, &config)
+    });
 
     assert!(result.is_err(), "extra column in record two");
+
     Ok(())
 }
