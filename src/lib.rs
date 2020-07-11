@@ -72,10 +72,14 @@ pub fn monitor_stream(
         reader.headers()?
     );
 
+    log::debug!("validated headers");
+
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
         Box::new(ChunkedStatsMonitor::from_config(&config)),
         Box::new(RollingAlertsMonitor::from_config(&config)),
     ];
+
+    log::debug!("monitors (initial state): {:#?}", monitors);
 
     let rows = reader.deserialize::<RequestRecord>();
 
@@ -84,6 +88,7 @@ pub fn monitor_stream(
 
     for record in ordered_records {
         let record = Rc::new(record);
+
         for monitor in monitors.iter_mut() {
             let output = monitor.push(&record)?;
             for line in output {
@@ -91,6 +96,8 @@ pub fn monitor_stream(
             }
         }
     }
+
+    log::debug!("monitors (final state): {:#?}", monitors);
 
     Ok(())
 }

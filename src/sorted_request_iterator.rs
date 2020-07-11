@@ -28,9 +28,7 @@ pub struct SortedRequestIterator<T: Iterator<Item = RequestRecord>> {
     largest_timestamp: u32,
 }
 
-/// A request record wrapped to sort by its date then an index.
-///
-/// Since BinaryHeap is a max heap, this sorts the values we want first, last.
+/// A request record wrapped to sort by its date then (for stability) an index.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ChronologicalRecord {
     record: RequestRecord,
@@ -45,7 +43,7 @@ impl PartialOrd for ChronologicalRecord {
 
 impl Ord for ChronologicalRecord {
     fn cmp(&self, other: &Self) -> Ordering {
-        (other.record.date, other.index).cmp(&(self.record.date, self.index))
+        (self.record.date, self.index).cmp(&(other.record.date, other.index))
     }
 }
 
@@ -66,16 +64,15 @@ impl<T: Iterator<Item = RequestRecord>> Iterator for SortedRequestIterator<T> {
 
     fn next(&mut self) -> Option<RequestRecord> {
         while self.sorted.is_empty() {
-            // Otherwise, see if there are any more items in the source iterator.
             let next = self.iterator.next();
 
             if next.is_none() {
                 // If there are no more items in the source iterator,
                 if self.unsorted.is_empty() {
-                    // then if there are also no unsorted items, the iterator is exhausted.
+                    // then if there are also no unsorted items, this iterator is also exhausted.
                     return None;
                 } else {
-                    // otherwise we can take the remaining unsorted items, sort them, and return one.
+                    // otherwise we can now take the remaining unsorted items and sort them.
                     for record in self.unsorted.drain().sorted() {
                         self.sorted.push_back(record.record);
                     }
@@ -85,24 +82,20 @@ impl<T: Iterator<Item = RequestRecord>> Iterator for SortedRequestIterator<T> {
 
             let (index, record) = next.unwrap();
 
-            // If there's a new value, but it doesn't move the time window forward,
-            // we still don't have any sorted values and need to loop.
-            if record.date <= self.largest_timestamp {
-                self.unsorted.push(ChronologicalRecord { record, index });
-                continue;
+            let buffer_advanced = record.date > self.largest_timestamp;
+            if buffer_advanced {
+                self.largest_timestamp = record.date;
             }
 
-            // if record.date > self.largest_timestamp + self.buffer_seconds {}
+            self.unsorted.push(ChronologicalRecord { record, index });
 
-            // assert!(record.date > self.buffer_minimum_timestamp);
-
-            // if record.date == self.buffer_minimum_timestamp + 1 {
-            //     // This record has the minimum possible
-            //     return Some(record);
-            // }
-
-            // self.buffer_minimum_timestamp = record.date - self.buffer_seconds;
-            // Some(record)
+            if buffer_advanced {
+                while self.unsorted.peek().unwrap().record.date
+                    < self.largest_timestamp - self.buffer_seconds
+                {
+                    self.sorted.push_back(self.unsorted.pop().unwrap().record);
+                }
+            }
         }
 
         self.sorted.pop_front()
