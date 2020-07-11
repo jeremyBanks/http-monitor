@@ -1,13 +1,22 @@
 #![allow(unused_imports)]
-use anyhow::{anyhow, Context, Result};
-use csv;
-use serde_derive::{Deserialize, Serialize};
+
 use std::{
     borrow::Cow,
+    cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
-    io::{stdin, stdout, Cursor, Read, Write},
+    io::{stderr, stdin, stdout, Cursor, Read, Write},
+    rc::Rc,
     str,
+    sync::Arc,
 };
+
+use anyhow::{anyhow, Context, Result};
+use atty;
+use csv;
+use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
+use serde_json;
+use thiserror;
 
 /// HTTP request record from input
 #[derive(Debug, Deserialize, Serialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
@@ -71,14 +80,13 @@ fn main() -> Result<()> {
 }
 
 fn monitor(source: &mut impl Read, sink: &mut impl Write, _config: &MonitorConfig) -> Result<()> {
-    let mut reader = csv::Reader::from_reader(source);
+    let mut reader = csv::ReaderBuilder::new().from_reader(source);
 
     let previous: Option<RequestRecord> = None;
 
     for result in reader.deserialize() {
         let record: RequestRecord = result?;
         writeln!(sink, "{:?}", record)?;
-        break;
     }
 
     Ok(())
@@ -94,7 +102,7 @@ fn test_monitor_nothing() -> Result<()> {
     let mut sink = Cursor::new(Vec::new());
     let config = MonitorConfig::default();
 
-    monitor(&mut source, &mut sink, &config).unwrap();
+    monitor(&mut source, &mut sink, &config)?;
 
     let actual = sink.into_inner();
     let actual = str::from_utf8(&actual)?;
@@ -117,5 +125,58 @@ fn test_monitor_sample_input() -> Result<()> {
     let actual = sink.into_inner();
     let actual = str::from_utf8(&actual)?;
     assert_eq!(actual, expected);
+    Ok(())
+}
+
+/// Test that entirely invalid non-csv input produces an error.
+#[test]
+fn test_monitor_invalid_non_csv_input() -> Result<()> {
+    let input = "1 2\n3 4\n5";
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    let result = monitor(&mut source, &mut sink, &config);
+
+    assert!(result.is_err());
+    Ok(())
+}
+
+/// Test that entirely invalid csv input produces an error (last column missing).
+#[test]
+fn test_monitor_invalid_csv_input() -> Result<()> {
+    let input = r#""remotehost","rfc931","authuser","date","request","status"
+        "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
+        "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";
+    "#;
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    let result = monitor(&mut source, &mut sink, &config);
+
+    assert!(result.is_err());
+    Ok(())
+}
+
+/// Test that entirely invalid csv input produces an error (extra column in second record).
+#[test]
+fn test_monitor_invalid_csv_input_2() -> Result<()> {
+    let input = r#""remotehost","rfc931","authuser","date","request","statqus","bytes"
+        "10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
+        "10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
+        "10.0.0.1","-","apache",1549574334,"GET /api/user HTTP/1.0",200,1194
+        "10.0.0.4","-","apache",1549574334,"POST /report HTTP/1.0",404,1307
+    "#;
+
+    let mut source = Cursor::new(input);
+    let mut sink = Cursor::new(Vec::new());
+    let config = MonitorConfig::default();
+
+    let result = monitor(&mut source, &mut sink, &config);
+
+    assert!(result.is_err());
     Ok(())
 }
