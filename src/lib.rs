@@ -77,7 +77,11 @@ pub fn monitor_stream(
         Box::new(RollingAlertsMonitor::from_config(&config)),
     ];
 
-    for record in reader.deserialize::<RequestRecord>() {
+    let rows = reader.deserialize::<RequestRecord>();
+
+    let ordered_records = SortedRequestIterator::new(rows, &config);
+
+    for record in  {
         let record = Rc::new(record?);
 
         for monitor in monitors.iter_mut() {
