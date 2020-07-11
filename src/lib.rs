@@ -26,8 +26,9 @@ mod models;
 mod monitors;
 mod sorted_request_iterator;
 
-pub use crate::models::{Config, RequestRecord};
-pub use monitors::{ChunkedStatsMonitor, Monitor, RollingAlertsMonitor};
+pub use self::models::{Config, RequestRecord};
+pub use self::monitors::{ChunkedStatsMonitor, Monitor, RollingAlertsMonitor};
+pub use self::sorted_request_iterator::SortedRequestIterator;
 
 /// The headers expected in the CSV input data.
 const CSV_HEADERS: [&str; 7] = [
