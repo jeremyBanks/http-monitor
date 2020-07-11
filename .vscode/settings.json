@@ -1,5 +1,4 @@
 {
-  "editor.formatOnSave": true,
   "files.exclude": {
     ".github": true,
     ".gitignore": true,
@@ -27,5 +26,10 @@
   },
   "peacock.affectTabActiveBorder": true,
   "peacock.affectActivityBar": false,
-  "peacock.affectAccentBorders": true
+  "peacock.affectAccentBorders": true,
+  "editor.formatOnSave": true,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 4,
+  "editor.wordWrap": "on",
+  "editor.rulers": [100]
 }
