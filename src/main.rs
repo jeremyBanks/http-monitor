@@ -14,15 +14,15 @@ struct Args {
 
     /// the average number of requests per second required to trigger an alert.
     #[argh(option)]
-    alert_rate: Option<u64>,
+    alert_rate: Option<u32>,
 
     /// the number of seconds over which the request count is averaged for alerting.
     #[argh(option)]
-    alert_window: Option<u64>,
+    alert_window: Option<u32>,
 
     /// the number of seconds worth of requests to aggregate for each stats output.
     #[argh(option)]
-    stats_window: Option<u64>,
+    stats_window: Option<u32>,
 }
 
 pub fn main() -> anyhow::Result<()> {

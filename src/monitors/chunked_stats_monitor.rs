@@ -10,7 +10,7 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::{anyhow, Context};
+use anyhow::{ensure, Context};
 use atty;
 use csv;
 use serde::{Deserialize, Serialize};
@@ -42,25 +42,28 @@ impl ChunkedStatsMonitor {
     fn maybe_flush_before(&mut self, record: &RequestRecord) -> anyhow::Result<Vec<String>> {
         // If this is the first record we're seeing, use it for the starting time
         // of the first chunk.
-        if self.chunk_timestamps.is_none() {}
-        if let Some(chunk_timestamps) = self.chunk_timestamps {
-            chunk_timestamps
-        } else {
-            }
-            }
-        };
+        let mut chunk_timestamps = self
+            .chunk_timestamps
+            .clone()
+            .unwrap_or_else(|| record.date..(record.date + self.chunk_seconds));
 
-        let chunk_timestamps = self.chunk_timestamps.unwrap();
+        ensure!(
+            record.date >= chunk_timestamps.start,
+            "records must be in chronological order but the next record, {:?}, occurs before the start of the current range, {:?}",
+            &record,
+            &chunk_timestamps
+        );
 
-        let output = Vec::new();
+        let mut output = Vec::new();
         while !chunk_timestamps.contains(&record.date) {
-            if record.date < chunk_timestamps.start {
-                return Err(anyhow!("records not in chronological order!"));
-            }
-
             output.append(&mut self.pending()?);
             self.requests.clear();
+
+            chunk_timestamps = chunk_timestamps.end..(chunk_timestamps.end + self.chunk_seconds);
         }
+
+        self.chunk_timestamps = Some(chunk_timestamps);
+
         Ok(output)
     }
 }
@@ -91,6 +94,6 @@ impl Monitor for ChunkedStatsMonitor {
     }
 
     fn pending(&mut self) -> anyhow::Result<Vec<String>> {
-        Ok(Vec::new())
+        Ok(vec![format!("{:#?}", self)])
     }
 }

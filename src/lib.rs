@@ -14,7 +14,7 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::{anyhow, Context};
+use anyhow::{ensure, Context};
 use atty;
 use csv;
 use serde::{Deserialize, Serialize};
@@ -62,13 +62,12 @@ pub fn monitor_stream(
     // We need to manually check the headers to cover the edge case that we have a file
     // with headers, but no rows. (Serde will implicitly check the headers when deserializing
     // a row into a struct, but if there are no rows the invalid headers would be ignored.)
-    if reader.headers()? != *&CSV_HEADERS[..] {
-        return Err(anyhow!(
-            "expected headers {:?}, but got {:?}",
-            CSV_HEADERS,
-            reader.headers()?
-        ));
-    }
+    ensure!(
+        reader.headers()? == *&CSV_HEADERS[..],
+        "expected headers {:?}, but got {:?}",
+        CSV_HEADERS,
+        reader.headers()?
+    );
 
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
         // TODO: pass config into these as appropriate
