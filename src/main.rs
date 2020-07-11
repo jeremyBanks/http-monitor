@@ -1,4 +1,4 @@
-//! Binary entry point for dd-monitor.
+//! Binary entry point for http-monitor.
 
 #[derive(argh::FromArgs, Debug)]
 /// Runs monitors against a CSV stream of HTTP request records from stdin.
@@ -31,13 +31,13 @@ pub fn main() -> anyhow::Result<()> {
     if args.quiet {
         std::env::set_var("RUST_LOG", "error");
     } else if args.verbose {
-        std::env::set_var("RUST_LOG", "debug,dd_monitor=trace");
+        std::env::set_var("RUST_LOG", "debug,http_monitor=trace");
     } else if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
     }
     env_logger::try_init()?;
 
-    let mut config = dd_monitor::Config::default();
+    let mut config = http_monitor::Config::default();
 
     // If stdin is a terminal, the user is probably confused. Bail with instructions.
     if atty::is(atty::Stream::Stdin) {
@@ -49,7 +49,7 @@ pub fn main() -> anyhow::Result<()> {
             
             or with a release binary:
                 cargo build --release
-                target/release/dd-monitor < samples/input.cs
+                target/release/http-monitor < samples/input.cs
             "
         );
 
@@ -70,13 +70,13 @@ pub fn main() -> anyhow::Result<()> {
 
     log::debug!("{:#?}", &config);
 
-    dd_monitor::monitor_stream(&mut std::io::stdin(), &mut std::io::stdout(), &config)?;
+    http_monitor::monitor_stream(&mut std::io::stdin(), &mut std::io::stdout(), &config)?;
 
     log::info!("done");
 
     // To check memory usage, add this sleep so you can ^Z the process
     // in your terminal and check it with:
-    //   $ top -p "$(pgrep dd-monitor)"
+    //   $ top -p "$(pgrep http-monitor)"
     // The VIRT and RES columns indicate the number of kilobytes of virtual
     // and real memory allocated for the process.
     //

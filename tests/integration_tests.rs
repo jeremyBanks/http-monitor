@@ -1,10 +1,10 @@
-//! Integration tests for dd-monitor, asserting the expected outputs for given inputs.
+//! Integration tests for http-monitor, asserting the expected outputs for given inputs.
 
 use std::{io::Cursor, panic::catch_unwind, str};
 
 use anyhow;
 
-use dd_monitor::{monitor_stream, Config};
+use http_monitor::{monitor_stream, Config};
 
 #[test]
 /// Tests with no input.

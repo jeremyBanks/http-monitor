@@ -1,4 +1,4 @@
-//! Library entry point for dd_monitor.
+//! Library entry point for http_monitor.
 #![warn(missing_docs, missing_debug_implementations)]
 
 use std::{

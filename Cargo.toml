@@ -1,16 +1,16 @@
 [package]
-name = "dd-monitor"
+name = "http-monitor"
 version = "0.20.20"
 authors = ["Jeremy Banks <_@jeremy.ca>", "Datadog"]
 publish = false
 edition = "2018"
 
 [lib]
-name = "dd_monitor"
+name = "http_monitor"
 path = "src/lib.rs"
 
 [[bin]]
-name = "dd-monitor"
+name = "http-monitor"
 path = "src/main.rs"
 
 [[bench]]

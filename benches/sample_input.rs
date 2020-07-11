@@ -2,7 +2,7 @@ use std::{io::Cursor, str};
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use dd_monitor::{monitor_stream, Config};
+use http_monitor::{monitor_stream, Config};
 
 fn bench_monitor_sample_input(c: &mut Criterion) {
     c.bench_function("monitor sample output", |b| {
