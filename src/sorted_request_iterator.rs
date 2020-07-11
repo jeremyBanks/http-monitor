@@ -5,6 +5,8 @@ use std::{
     rc::Rc,
 };
 
+use itertools::Itertools;
+
 use crate::{Config, RequestRecord};
 
 /// Wraps an iterator of RequestRecords with a buffer to allow the records to be sorted.
@@ -50,7 +52,7 @@ impl Ord for ChronologicalRecord {
 impl<T: Iterator<Item = Rc<RequestRecord>>> SortedRequestIterator<T> {
     pub fn new(iterator: T, config: Config) -> Self {
         Self {
-            iterator: iterator.fuse(),
+            iterator: iterator.enumerate(),
             buffer_seconds: 2 * config.maximum_timestamp_error,
             largest_timestamp: 0,
             sorted: VecDeque::new(),
@@ -63,28 +65,47 @@ impl<T: Iterator<Item = Rc<RequestRecord>>> Iterator for SortedRequestIterator<T
     type Item = Rc<RequestRecord>;
 
     fn next(&mut self) -> Option<Rc<RequestRecord>> {
-        if let Some(record) = self.sorted.pop_front() {
-            Some(record)
-        } else if let Some((index, record)) = self.iterator.next() {
-            if record.date > self.largest_timestamp {
-            } else {
-                self.unsorted.push(ChronologicalRecord { record, index })
+        while self.sorted.is_empty() {
+            // Otherwise, see if there are any more items in the source iterator.
+            let next = self.iterator.next();
+
+            if next.is_none() {
+                // If there are no more items in the source iterator,
+                if self.unsorted.is_empty() {
+                    // then if there are also no unsorted items, the iterator is exhausted.
+                    return None;
+                } else {
+                    // otherwise we can take the remaining unsorted items, sort them, and return one.
+                    for record in self.unsorted.drain().sorted() {
+                        self.sorted.push_back(record.record);
+                    }
+                    break;
+                }
             }
 
-            if record.date > self.largest_timestamp + self.buffer_seconds {}
+            let (index, record) = next.unwrap();
 
-            assert!(record.date > self.buffer_minimum_timestamp);
-
-            if record.date == self.buffer_minimum_timestamp + 1 {
-                // This record has the minimum possible
-                return Some(record);
+            // If there's a new value, but it doesn't move the time window forward,
+            // we still don't have any sorted values and need to loop.
+            if record.date <= self.largest_timestamp {
+                self.unsorted.push(ChronologicalRecord { record, index });
+                continue;
             }
 
-            self.buffer_minimum_timestamp = record.date - self.buffer_seconds;
-            Some(record)
-        } else {
-            self.buffer.pop().map(|x| x.record)
+            // if record.date > self.largest_timestamp + self.buffer_seconds {}
+
+            // assert!(record.date > self.buffer_minimum_timestamp);
+
+            // if record.date == self.buffer_minimum_timestamp + 1 {
+            //     // This record has the minimum possible
+            //     return Some(record);
+            // }
+
+            // self.buffer_minimum_timestamp = record.date - self.buffer_seconds;
+            // Some(record)
         }
+
+        self.sorted.pop_front()
     }
 }
 
