@@ -1,4 +1,4 @@
-use std::{fmt::Debug, net::Ipv4Addr, str};
+use std::{fmt::Debug, io::Read, net::Ipv4Addr, str};
 
 use serde_derive::{Deserialize, Serialize};
 
@@ -25,6 +25,12 @@ pub struct RequestRecord {
 }
 
 impl RequestRecord {
+    pub fn read_csv_line(reader: &mut impl std::io::BufRead) -> Option<Self> {
+        let line = Vec::new();
+        if let Err(error) = reader.read_line(&mut line) {}
+        unimplemented!()
+    }
+
     pub fn section(&self) -> &str {
         let path = self.request.split(' ').nth(1).unwrap_or("/unknown");
         let section = path.split('/').nth(1).unwrap_or("unknown");
