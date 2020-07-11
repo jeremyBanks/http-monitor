@@ -45,10 +45,10 @@ pub struct RequestRecord {
 pub struct Config {
     /// Number of seconds of log messages to aggregate for batch stats.
     /// This window is cleared every X seconds, each time stats are logged.
-    pub stats_window: u64,
+    pub stats_window: u32,
     /// Number of seconds of log messages to aggregate for alerts.
     /// This is a rolling window, with records individually dropping off X seconds after they enter.
-    pub alert_window: u64,
+    pub alert_window: u32,
     /// Average number of requests per second required to trigger an alert.
-    pub alert_rate: u64,
+    pub alert_rate: u32,
 }

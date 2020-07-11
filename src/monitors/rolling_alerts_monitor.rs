@@ -22,10 +22,10 @@ use crate::{Config, Monitor, RequestRecord};
 #[derive(Debug, Default, Clone)]
 pub struct RollingAlertsMonitor {
     /// The number of seconds of requests to include in our rolling window.
-    window_seconds: u64,
+    window_seconds: u32,
 
     /// The average number of requests per second through the window required to trigger an alert.
-    alert_rate: u64,
+    alert_rate: u32,
 
     /// Requests that are in the current alerting window.
     requests: VecDeque<Rc<RequestRecord>>,
