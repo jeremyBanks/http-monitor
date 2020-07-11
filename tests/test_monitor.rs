@@ -1,4 +1,4 @@
-#![allow(unused_imports)]
+//! Integration tests for dd-monitor.
 
 use std::{
   borrow::Cow,
@@ -10,7 +10,7 @@ use std::{
   sync::Arc,
 };
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Context};
 use atty;
 use csv;
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,7 @@ use dd_monitor::{monitor, MonitorConfig};
 
 #[test]
 /// Tests with no input.
-fn test_monitor_nothing() -> Result<()> {
+fn test_monitor_nothing() -> anyhow::Result<()> {
   let input = "";
 
   let mut source = Cursor::new(input);
@@ -37,7 +37,7 @@ fn test_monitor_nothing() -> Result<()> {
 
 #[test]
 #[ignore = "not implemented"]
-fn test_monitor_one_request() -> Result<()> {
+fn test_monitor_one_request() -> anyhow::Result<()> {
   let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
         "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200,200"#;
   let expected = "";
@@ -56,7 +56,7 @@ fn test_monitor_one_request() -> Result<()> {
 
 #[test]
 #[ignore = "not implemented"]
-fn test_monitor_sample_input() -> Result<()> {
+fn test_monitor_sample_input() -> anyhow::Result<()> {
   let input = &include_str!("../sample_input.csv")[..];
   let expected = "";
 
@@ -73,7 +73,7 @@ fn test_monitor_sample_input() -> Result<()> {
 }
 
 #[test]
-fn test_monitor_invalid_csv_input() -> Result<()> {
+fn test_monitor_invalid_csv_input() -> anyhow::Result<()> {
   let input = "1 2\n3 4\n5";
 
   let mut source = Cursor::new(input);
@@ -87,7 +87,7 @@ fn test_monitor_invalid_csv_input() -> Result<()> {
 }
 
 #[test]
-fn test_monitor_invalid_csv_input_2() -> Result<()> {
+fn test_monitor_invalid_csv_input_2() -> anyhow::Result<()> {
   let input = r#"241"#;
 
   let mut source = Cursor::new(input);
@@ -100,7 +100,7 @@ fn test_monitor_invalid_csv_input_2() -> Result<()> {
   Ok(())
 }
 #[test]
-fn test_monitor_invalid_csv_input_3() -> Result<()> {
+fn test_monitor_invalid_csv_input_3() -> anyhow::Result<()> {
   let input = r#"241
         123
         456"#;
@@ -116,7 +116,7 @@ fn test_monitor_invalid_csv_input_3() -> Result<()> {
 }
 
 #[test]
-fn test_monitor_invalid_csv_input_4() -> Result<()> {
+fn test_monitor_invalid_csv_input_4() -> anyhow::Result<()> {
   let input = r#""remotehost","rfc931","authuser","date","request","status"
         "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200
         "10.0.0.4","-","apache",1549573860,"GET /api/user HTTP/1.0",200";"#;
@@ -132,7 +132,7 @@ fn test_monitor_invalid_csv_input_4() -> Result<()> {
 }
 
 #[test]
-fn test_monitor_invalid_csv_input_extra_column() -> Result<()> {
+fn test_monitor_invalid_csv_input_extra_column() -> anyhow::Result<()> {
   let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
         "10.0.0.1","-","apache",1549574332,"GET /api/user HTTP/1.0",200,1234
         "10.0.0.4","-","apache",1549574333,"GET /report HTTP/1.0",200,1136,10101,13513
