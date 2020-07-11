@@ -22,7 +22,6 @@ fn test_monitor_nothing() -> anyhow::Result<()> {
 }
 
 #[test]
-#[ignore = "not implemented"]
 fn test_monitor_one_request() -> anyhow::Result<()> {
     let input = r#""remotehost","rfc931","authuser","date","request","status","bytes"
 "10.0.0.2","-","apache",1549573860,"GET /api/user HTTP/1.0",200,200"#;
@@ -41,7 +40,6 @@ fn test_monitor_one_request() -> anyhow::Result<()> {
 }
 
 #[test]
-#[ignore = "not implemented"]
 fn test_monitor_sample_input() -> anyhow::Result<()> {
     let input = &include_str!("../samples/input.csv")[..];
     let expected = &include_str!("../samples/output.txt")[..];

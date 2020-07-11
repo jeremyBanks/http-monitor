@@ -15,6 +15,7 @@ use anyhow::{ensure, Context};
 use atty;
 use chrono::NaiveDateTime;
 use csv;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_derive::{Deserialize, Serialize};
 use thiserror;
@@ -106,10 +107,32 @@ impl Monitor for ChunkedStatsMonitor {
 
         let rate = self.request_count as f64 / self.chunk_seconds as f64;
 
+        let top_status_codes = self
+            .requests_by_status_code
+            .iter()
+            .map(|(code, count)| (count, code))
+            .sorted()
+            .rev()
+            .take(3)
+            .map(|(count, code)| format!("{:3}% {:03}", 100 * count / self.request_count, code))
+            .join(", ");
+
+        let top_sections = self
+            .requests_by_section
+            .iter()
+            .map(|(section, count)| (count, section))
+            .sorted()
+            .rev()
+            .take(1)
+            .map(|(count, section)| {
+                format!("{:3}% in {:<11}", 100 * count / self.request_count, section)
+            })
+            .join(", ");
+
         if self.request_count > 0 {
             Ok(vec![format!(
-                "{}-{}  |  {:4} requests at {:5.1}rps  |  {:5.1}% in {:<10}  |  80% 200, 10% 302, 20% other\n{:#?}\n{:#?}",
-                start, end, self.request_count, rate, 12.3, "/users", self.requests_by_status_code, self.requests_by_section
+                "{}-{}  |  {:4} requests at {:5.1}rps  |  {}  |  {}",
+                start, end, self.request_count, rate, top_sections, top_status_codes
             )])
         } else {
             Ok(vec![format!("{}-{}  |  no requests", start, end,)])
