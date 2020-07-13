@@ -12,7 +12,7 @@ if [[ ${GIT_COMMIT-} ]]; then
     declare -a parents
     parents+=($(git log --pretty=%P -1 "$GIT_COMMIT"))
 
-    if (( ${#parents[@]} )); then
+    if ((${#parents[@]})); then
         parent="${parents[0]}"
     else
         is_root=true
@@ -72,7 +72,7 @@ declare icao_tree
 icao_tree="$(icao-hex "${tree:0:4}")"
 
 declare -a git_roots
-git_roots+=( "$(git rev-list --max-parents=0 "$parent")" )
+git_roots+=($(git rev-list --max-parents=0 "$parent"))
 
 declare -i generation=0
 if [[ ! "$is_root" ]]; then
