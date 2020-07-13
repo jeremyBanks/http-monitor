@@ -23,10 +23,11 @@ declare path=.banksh
 declare repo=https://github.com/jeremyBanks/banksh
 declare head=HEAD
 
-if [[ ! -d $path ]]; then
-  git subtree add --squash --prefix="$path" "$repo" "$head"
+if [[ -d $path ]] && GIT_EDITOR="bash -c 'git log -1 --pretty=%B HEAD^2 > \"\$1\"' --" git subtree pull --squash --prefix="$path" "$repo" "$head"; then
+  :
 else
-  GIT_EDITOR="bash -c 'git log -1 --pretty=%B HEAD^2 > \"\$1\"' --" git subtree pull --squash --prefix="$path" "$repo" "$head"
+  git rm -rf .banksh
+  git subtree add --squash --prefix="$path" "$repo" "$head"
 fi
 
 git --no-pager log --graph --all --decorate -n8 --oneline

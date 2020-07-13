@@ -14,7 +14,7 @@ printf "%s" "Please wait a moment and confirm that this is what you want to do."
 while read -s -n 1 -t 4 -r; do
     if [[ "$REPLY" =~ ^[Nn]$ ]]; then
         echo
-        exit
+        exit 1
     fi
     printf "\r%s" "$(tput el; tput bold; tput setaf 1)Please wait a moment$(tput sgr0) or press N to quit."
 done
@@ -23,7 +23,7 @@ read -p "$(tput el; tput bold; tput setaf 1)Press Y to proceed with wipe.$(tput 
 echo "$(tput sgr0)"
 
 if [[ ! "${REPLY}" =~ ^[Yy]$ ]]; then
-    exit
+    exit 1
 fi
 
 declare wiped
