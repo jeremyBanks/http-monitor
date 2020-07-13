@@ -3,17 +3,16 @@ set -euo pipefail
 shopt -s inherit_errexit nullglob compat"${BASH_COMPAT=42}"
 
 declare message_prefix
-declare parent
+declare parents
 declare tree
 declare is_root=""
 if [[ ${GIT_COMMIT-} ]]; then
     message_prefix=''
 
-    declare parent="$GIT_PARENT"
+    declare parents="$GIT_PARENTS"
 
-    if [[ ! $parent ]]; then
+    if [[ ! $parents ]]; then
         is_root=true
-        parent="$GIT_COMMIT"
     fi
 
     tree="$(git rev-parse "$GIT_COMMIT^{tree}")"
@@ -26,7 +25,7 @@ else
     cd "$repo"
     git config alias.wip '!./git-wip'
 
-    parent="$(git rev-parse HEAD)"
+    parents="$(git rev-parse HEAD)"
 
     git add .
 
@@ -69,16 +68,18 @@ declare icao_tree
 icao_tree="$(icao-hex "${tree:0:4}")"
 
 declare -a git_roots
-git_roots+=($(git rev-list --max-parents=0 "$parent"))
+git_roots+=($(git rev-list --max-parents=0 $parents))
 
 declare -i generation=0
 if [[ ! "$is_root" ]]; then
     for root in "${git_roots[@]}"; do
-        declare -i root_generation
-        root_generation="$(git rev-list --count "$root"..."$parent")"
-        if ((root_generation >= generation)); then
-            generation=$((root_generation + 1))
-        fi 
+        for parent in $parents; do
+            declare -i root_generation
+            root_generation="$(git rev-list --count "$root"..."$parent")"
+            if ((root_generation >= generation)); then
+                generation=$((root_generation + 1))
+            fi
+        done
     done
 fi
 
@@ -93,8 +94,14 @@ declare -i drift=32768
 ((step >= tick))
 ((drift >= step))
 
-declare parent_timestamp
-parent_timestamp="$(git log --format=%ct -1 "$parent")"
+declare -i parent_timestamp=0
+for parent in $parents; do
+    declare -i this_parent_timestamp
+    this_parent_timestamp="$(git log --format=%ct -1 "$parent")"
+    if ((this_parent_timestamp > parent_timestamp)); then ((
+        parent_timestamp = this_parent_timestamp
+    )); fi
+done
 
 declare current_timestamp
 if [[ ${GIT_COMMIT-} ]]; then
