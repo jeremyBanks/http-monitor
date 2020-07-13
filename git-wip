@@ -35,7 +35,6 @@ fi
 
 function icao-hex  {
     declare letters="$*"
-    
     for ((i=0; i<${#letters}; i++)); do
         if ((i > 0)); then
             printf " "
@@ -69,24 +68,6 @@ declare -rA icao_hex=(
 declare icao_tree
 icao_tree="$(icao-hex "${tree:0:4}")"
 
-declare tree_upper
-tree_upper="${tree^^}"
-
-declare extra_bits
-extra_bits="$(echo "obase=2; ibase=16; ${tree_upper:4}" | bc | tr -cd 01)"
-
-declare icao_tree_capitalized
-icao_tree_capitalized="$(
-    for ((i=0; i<${#icao_tree}; i++)); do
-        declare char="${icao_tree:$i:1}"
-        if ((i>0)) && [[ 010 == "${extra_bits:$i:3}" || 000 == "${extra_bits:$i:3}" ]]; then
-            printf "%s" "${char^^}"
-        else
-            printf "%s" "${char}"
-        fi
-    done
-)"
-
 declare -a git_roots
 git_roots+=($(git rev-list --max-parents=0 "$parent"))
 
@@ -102,7 +83,7 @@ if [[ ! "$is_root" ]]; then
 fi
 
 declare message
-message="${message_prefix}r$generation $icao_tree_capitalized"
+message="${message_prefix}r$generation $icao_tree"
 
 
 declare -i tick=256
