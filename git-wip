@@ -72,18 +72,14 @@ icao_tree="$(icao-hex "${tree:0:4}")"
 declare tree_upper
 tree_upper="${tree^^}"
 
-echo "tree_upper; $tree_upper"
-
 declare extra_bits
 extra_bits="$(echo "obase=2; ibase=16; ${tree_upper:4}" | bc | tr -cd 01)"
-
-echo "extra_bits: ${extra_bits}"
 
 declare icao_tree_capitalized
 icao_tree_capitalized="$(
     for ((i=0; i<${#icao_tree}; i++)); do
         declare char="${icao_tree:$i:1}"
-        if [[ 1 == "${extra_bits:$i:1}" ]]; then
+        if ((i>0)) && [[ 010 == "${extra_bits:$i:3}" || 000 == "${extra_bits:$i:3}" ]]; then
             printf "%s" "${char^^}"
         else
             printf "%s" "${char}"
