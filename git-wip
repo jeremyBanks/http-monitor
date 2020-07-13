@@ -10,10 +10,10 @@ if [[ ${GIT_COMMIT-} ]]; then
     message_prefix=''
 
     declare -a parents
-    parents+=($(git log --pretty=%P -1 "$GIT_COMMIT"))
+    parents+=($GIT_PARENTS)
 
     if ((${#parents[@]})); then
-        parent="$(map "${parents[0]}")"
+        parent="$("${parents[0]}")"
     else
         is_root=true
         parent="$GIT_COMMIT"
