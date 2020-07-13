@@ -5,6 +5,9 @@ shopt -s inherit_errexit nullglob compat"${BASH_COMPAT=42}"
 declare repo
 repo="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
+cd "$repo"
+git config alias.wipe '!./git-wipe'
+
 echo "$(tput bold; tput setaf 1)This will wipe all commits' messages and authors, and smear timestamps.$(tput sgr 0)"
 echo
 printf "%s\r" "Please wait a moment and confirm that this is what you want to do."
@@ -22,8 +25,6 @@ echo "$(tput sgr 0)"
 if [[ ! "${REPLY}" =~ ^[Yy]$ ]]; then
     exit
 fi
-
-cd "$repo"
 
 export FILTER_BRANCH_SQUELCH_WARNING=true
 export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-$(git config user.name)}"
