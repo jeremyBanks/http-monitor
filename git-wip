@@ -65,9 +65,8 @@ done
 declare message
 message="wip r$generation $icao_tree"
 
-declare -i tick=$((4 * 60 + 20))
-
-declare -i max_error=$((12 * 60 * 60))
+declare -i tick=256
+declare -i max_error=32768
 
 declare parent_timestamp
 parent_timestamp="$(git log --format=%ct -1)"
