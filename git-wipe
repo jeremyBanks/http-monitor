@@ -50,7 +50,7 @@ eval "'"'"\$(bash $git_wip)"'"'""
 
 export FILTER_BRANCH_SQUELCH_WARNING=true
 
-git filter-branch --force --env-filter "${wipe_env}" --msg-filter "${wipe_env}; echo \${GIT_COMMIT_MESSAGE}" ${1+--tree-filter "$1"}
+git filter-branch --force --env-filter "${wipe_env}" --msg-filter "${wipe_env}; echo \${GIT_COMMIT_MESSAGE}" ${1+--tree-filter "$*"}
 
 git --no-pager log --format=raw --graph --decorate -n 2 "$wiped"
 echo
