@@ -104,7 +104,7 @@ fi
 declare -i timestamp
 if [[ "${GIT_COMMIT-}" && "${is_root}" ]]; then
     timestamp="$current_timestamp"
-elif ((current_timestamp - parent_timestamp > max_error)); then
+elif ((current_timestamp - parent_timestamp - tick > max_error)); then
     timestamp=$((current_timestamp - (current_timestamp % tick)))
 else
     timestamp=$((parent_timestamp + tick - (parent_timestamp % tick)))
