@@ -1,35 +1,82 @@
 #!/bin/bash
-set -euo pipefail;
-: "${MERKLE_TARGET=$(dirname "${BASH_SOURCE}")/..}";
+set -euo pipefail
+shopt -s inherit_errexit nullglob compat"${BASH_COMPAT=42}"
 
-pushd "${MERKLE_TARGET}";
+declare repo
+repo="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
-git --no-pager log --format=raw --graph --decorate -n 2;
-echo;
+cd "$repo"
 
-if [[ ! "${MERKLE_NO_CONFIRM:-}" =~ ^[Yy]$ ]]; then
-  read -p "$(tput bold)$(tput setaf 1)Press Y to normalize the merkle tree. Press N to quit. $(tput smul)" -n 1 -r;
-  echo "$(tput sgr 0)";
-  echo;
-  if [[ ! "${REPLY}" =~ ^[Yy]$ ]]; then
-      exit 1;
-  fi
-fi
+declare parent
+parent="$(git rev-parse HEAD)"
 
-env='export GIT_HEIGHT="$(git rev-list --count "${GIT_COMMIT:-HEAD}")" ;\
-  export GIT_COMMITTER_TIMESTAMP="$((1594424000 + (20 + 60 * 20) * (${GIT_HEIGHT} - 1) ))" ;\
-  export GIT_COMMITTER_DATE="$(date -ud @"${GIT_COMMITTER_TIMESTAMP}")" ;\
-  export GIT_COMMITTER_NAME="Jeremy Banks" ;\
-  export GIT_COMMITTER_EMAIL="\<_@jeremy.ca\>" ;\
-  export GIT_AUTHOR_TIMESTAMP="${GIT_COMMITTER_TIMESTAMP}" ;\
-  export GIT_AUTHOR_DATE="${GIT_COMMITTER_DATE}" ;\
-  export GIT_AUTHOR_NAME="${GIT_COMMITTER_NAME}" ;\
-  export GIT_AUTHOR_EMAIL="${GIT_COMMITTER_EMAIL}" ;\
-  export GIT_TREE_HASH="$(git rev-parse --short=8 ${GIT_COMMIT:-HEAD}^{tree})" ;\
-  export GIT_MESSAGE="$(printf r%s:\ %s "$(($(git rev-list --count ${GIT_COMMIT:-HEAD}) - 1))" "$(echo "$GIT_TREE_HASH" | python3 -c '"'"'print(" ".join(list(filter(bool, (dict(a="alfa", b="bravo", c="charlie", d="delta", e="echo", f="foxtrot", **{"0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine"}).get(c, "") for c in __import__("sys").stdin.read().lower())))[:4]))'"'"')")" ;\
-  true';
+function icao-hex  {
+    declare letters="$*"
+    for (( i=0; i<${#letters}; i++ )); do
+        if (( i > 0 )); then
+            printf " "
+        fi
+        declare letter="${letters:$i:1}"
+        declare phono
+        phono="${icao_hex[$letter]}"
+        printf "%s" "$phono"
+    done
+}
 
-FILTER_BRANCH_SQUELCH_WARNING=true git filter-branch --force --env-filter "${env}" --msg-filter "${env}; echo \${GIT_MESSAGE}" "$@" || echo "I hope that wasn't an error!" 1>&2;
+declare -rA icao_hex=(
+    [0]=zero
+    [1]=one
+    [2]=two
+    [3]=three
+    [4]=four
+    [5]=five
+    [6]=six
+    [7]=seven
+    [8]=eight
+    [9]=nine
+    [a]=alfa
+    [b]=bravo
+    [c]=charlie
+    [d]=delta
+    [e]=echo
+    [f]=foxtrot
+)
 
-echo;
-git --no-pager log --format=raw --graph --decorate -n 2;
+git add .
+
+declare parent_author_timestamp
+parent_author_timestamp="$(git log --format=%at -1)"
+
+declare tree
+tree="$(git write-tree)"
+
+declare icao_tree
+icao_tree="$(icao-hex "${tree:0:4}")"
+
+declare -a git_roots
+git_roots+=( "$(git rev-list --max-parents=0 "$parent")" )
+
+declare -i generation=0
+for root in "${git_roots[@]}"; do
+    declare -i root_generation;
+    root_generation="$(git rev-list --count "$root"..."$parent")"
+    if ((root_generation >= generation)); then
+        generation=$((root_generation + 1))
+    fi 
+done
+
+declare message
+message="wip r$generation $icao_tree"
+
+declare current_timestamp
+current_timestamp="$(date +%s)"
+
+declare -i timestamp=$((parent_author_timestamp + 20 * 60 + 20))
+declare date
+date="$(date -ud @"$timestamp")"
+
+export GIT_COMMITTER_DATE="$date"
+export GIT_AUTHOR_DATE="$date"
+git commit --no-edit -m "$message"
+
+git --no-pager log --format=raw --graph --decorate -n 2

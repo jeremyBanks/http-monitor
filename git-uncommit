@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euo pipefail
+shopt -s inherit_errexit nullglob compat"${BASH_COMPAT=42}"
+
+declare repo
+repo="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+cd "$repo"
+
+declare parent
+parent="$(git rev-parse HEAD)"
+
+git tag "uncommitted/$parent" "$parent"
+
+git reset --soft HEAD^
+
+git --no-pager log --format=raw --graph --decorate -n 2 "$parent"
+
+git status
