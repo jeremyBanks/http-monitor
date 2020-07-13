@@ -13,7 +13,7 @@ if [[ ${GIT_COMMIT-} ]]; then
     parents+=($(git log --pretty=%P -1 "$GIT_COMMIT"))
 
     if ((${#parents[@]})); then
-        parent="${parents[0]}"
+        parent="$(map "${parents[0]}")"
     else
         is_root=true
         parent="$GIT_COMMIT"
@@ -104,7 +104,7 @@ fi
 declare -i timestamp
 if [[ "${GIT_COMMIT-}" && "${is_root}" ]]; then
     timestamp="$current_timestamp"
-elif ((current_timestamp - parent_timestamp - tick > max_error)); then
+elif ((current_timestamp - parent_timestamp > max_error)); then
     timestamp=$((current_timestamp - (current_timestamp % tick)))
 else
     timestamp=$((parent_timestamp + tick - (parent_timestamp % tick)))
