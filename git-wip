@@ -9,12 +9,9 @@ declare is_root=""
 if [[ ${GIT_COMMIT-} ]]; then
     message_prefix=''
 
-    declare -a parents=
-    parents+=($GIT_PARENTS)
+    declare parent="$GIT_PARENT"
 
-    if ((${#parents[@]})); then
-        parent="${parents[0]}"
-    else
+    if [[ ! $parent ]]; then
         is_root=true
         parent="$GIT_COMMIT"
     fi
