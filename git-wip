@@ -12,8 +12,8 @@ parent="$(git rev-parse HEAD)"
 
 function icao-hex  {
     declare letters="$*"
-    for (( i=0; i<${#letters}; i++ )); do
-        if (( i > 0 )); then
+    for ((i=0; i<${#letters}; i++)); do
+        if ((i > 0)); then
             printf " "
         fi
         declare letter="${letters:$i:1}"
@@ -44,9 +44,6 @@ declare -rA icao_hex=(
 
 git add .
 
-declare parent_author_timestamp
-parent_author_timestamp="$(git log --format=%at -1)"
-
 declare tree
 tree="$(git write-tree)"
 
@@ -68,10 +65,22 @@ done
 declare message
 message="wip r$generation $icao_tree"
 
+declare -i tick=$((4 * 60 + 20))
+
+declare -i max_error=$((12 * 60 * 60))
+
+declare parent_timestamp
+parent_timestamp="$(git log --format=%ct -1)"
+
 declare current_timestamp
 current_timestamp="$(date +%s)"
 
-declare -i timestamp=$((parent_author_timestamp + 20 * 60 + 20))
+declare -i timestamp
+if ((current_timestamp - parent_timestamp > max_error)); then
+    timestamp=$((current_timestamp - (current_timestamp % tick)))
+else
+    timestamp=$((parent_timestamp + tick - (parent_timestamp % tick)))
+fi
 declare date
 date="$(date -ud @"$timestamp")"
 
