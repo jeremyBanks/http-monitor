@@ -85,8 +85,13 @@ fi
 declare message
 message="${message_prefix}r$generation $icao_tree"
 
+
 declare -i tick=256
-declare -i max_error=32768
+declare -i step=16384
+declare -i drift=32768
+((0 == (step % tick)))
+((step >= tick))
+((drift >= step))
 
 declare parent_timestamp
 parent_timestamp="$(git log --format=%ct -1 "$parent")"
@@ -101,8 +106,8 @@ fi
 declare -i timestamp
 if [[ "${GIT_COMMIT-}" && "${is_root}" ]]; then
     timestamp="$current_timestamp"
-elif ((current_timestamp - parent_timestamp > max_error)); then
-    timestamp=$((current_timestamp - (current_timestamp % tick)))
+elif ((current_timestamp - parent_timestamp > drift)); then
+    timestamp=$((current_timestamp - (current_timestamp % step)))
 else
     timestamp=$((parent_timestamp + tick - (parent_timestamp % tick)))
 fi
