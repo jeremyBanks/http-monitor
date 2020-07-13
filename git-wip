@@ -68,7 +68,9 @@ declare icao_tree
 icao_tree="$(icao-hex "${tree:0:4}")"
 
 declare -a git_roots
-git_roots+=($(git rev-list --max-parents=0 $parents))
+if [[ ! "$is_root" ]]; then
+    git_roots+=($(git rev-list --max-parents=0 $parents))
+fi
 
 declare -i generation=0
 if [[ ! "$is_root" ]]; then
