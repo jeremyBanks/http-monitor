@@ -7,7 +7,7 @@ repo="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
 cd "$repo"
 
-git config alias.wip "!git-wip"
+git config alias.wip "!./git-wip"
 
 declare parent
 parent="$(git rev-parse HEAD)"
