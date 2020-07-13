@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+shopt -s inherit_errexit nullglob compat"${BASH_COMPAT=42}"
+
+declare repo
+repo="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+
+echo "$(tput bold; tput setaf 1)This will wipe all commits' messages and authors, and smear timestamps.$(tput sgr 0)"
+echo
+printf "%s\r" "Please wait a moment and confirm that this is what you want to do."
+while read -s -n 1 -t 4 -r; do
+    if [[ "$REPLY" =~ ^[Nn]$ ]]; then
+        echo
+        exit
+    fi
+    printf "\r%s\r" "$(tput el; tput bold; tput setaf 1)Please wait a moment$(tput sgr 0) or press N to quit."
+done
+printf "\r"
+read -p "$(tput el; tput bold; tput setaf 1)Press Y to proceed with wipe. Press N to quit. $(tput smul)" -n 1 -r
+echo "$(tput sgr 0)"
+
+if [[ ! "${REPLY}" =~ ^[Yy]$ ]]; then
+    exit
+fi
+
+cd "$repo"
+
+export FILTER_BRANCH_SQUELCH_WARNING=true
+export GIT_AUTHOR_NAME="${GIT_AUTHOR_NAME:-$(git config user.name)}"
+export GIT_AUTHOR_EMAIL="${GIT_AUTHOR_EMAIL:-$(git config user.email)}"

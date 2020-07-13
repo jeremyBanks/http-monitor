@@ -63,7 +63,7 @@ for root in "${git_roots[@]}"; do
 done
 
 declare message
-message="wip r$generation $icao_tree"
+message="${WIP_PREFIX-wip }r$generation $icao_tree"
 
 declare -i tick=256
 declare -i max_error=32768
@@ -85,6 +85,9 @@ date="$(date -ud @"$timestamp")"
 
 export GIT_COMMITTER_DATE="$date"
 export GIT_AUTHOR_DATE="$date"
-git commit --quiet -m "$message"
+export GIT_COMMIT_MESSAGE="$message"
 
-git --no-pager log --format=raw --graph --decorate -n 2
+if [[ "${WIP_COMMIT-yes}" = yes ]]; then
+    git commit --quiet -m "$message"
+    git --no-pager log --format=raw --graph --decorate -n 2
+fi
