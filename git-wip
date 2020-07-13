@@ -55,7 +55,7 @@ git_roots+=( "$(git rev-list --max-parents=0 "$parent")" )
 
 declare -i generation=0
 for root in "${git_roots[@]}"; do
-    declare -i root_generation;
+    declare -i root_generation
     root_generation="$(git rev-list --count "$root"..."$parent")"
     if ((root_generation >= generation)); then
         generation=$((root_generation + 1))
