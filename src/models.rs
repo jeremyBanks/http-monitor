@@ -71,3 +71,17 @@ pub struct Config {
     /// The margin of error on a record's timestamp, in seconds.
     pub maximum_timestamp_error: u32,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_iter() {
+        let input = "test";
+        let reader = std::io::Cursor::new(input);
+        let mut reader = std::io::BufReader::new(reader);
+
+        let _request = Request::read_csv_line(&mut reader).unwrap();
+    }
+}
