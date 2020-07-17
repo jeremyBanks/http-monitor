@@ -36,8 +36,6 @@ pub fn monitor_stream(
     sink: &mut impl Write,
     config: &Config,
 ) -> anyhow::Result<()> {
-    let mut reader = csv::Reader::from_reader(source);
-
     let mut monitors: Vec<Box<dyn Monitor>> = vec![
         Box::new(ChunkedStatsMonitor::from_config(&config)),
         Box::new(RollingAlertsMonitor::from_config(&config)),
@@ -45,13 +43,15 @@ pub fn monitor_stream(
 
     log::debug!("monitors (initial state): {:#?}", monitors);
 
-    let rows = reader.deserialize::<RequestRecord>();
-
     let ordered_records =
         SortedRequestIterator::new(rows.map(|row| row.expect("row should be valid")), config);
 
-    for record in ordered_records {
-        let record = Rc::new(record);
+    loop {
+        let record = RequestRecord::read_csv_line(&mut source);
+        if record == None {
+            break;
+        }
+        let record = Rc::new(record.unwrap());
 
         for monitor in monitors.iter_mut() {
             let output = monitor.push(&record)?;
