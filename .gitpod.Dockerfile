@@ -8,4 +8,4 @@ RUN rustup component add --toolchain beta rust-src rls
 RUN rustup component add --toolchain nightly rust-src rls rust-analyzer-preview
 RUN cargo install cargo-edit
 RUN cargo install https
-RUN chmod -R u+rwX,go+rX,go-w /usr/local/cargo
+RUN cargo clean

@@ -9,7 +9,7 @@ tasks:
           git config alias.wip '!.banksh/bin/git-wip'
           git config alias.cm '!GIT_MESSAGE_PREFIX= .banksh/bin/git-wip'
       init: |
-          ln -sf /usr/local/cargo /workspace/.cargo
+          ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin/*
           cargo build || echo failed
           cargo build --release || echo failed
     - before: |
