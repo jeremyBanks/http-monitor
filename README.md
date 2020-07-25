@@ -7,6 +7,8 @@
    (The default options will be fine, you don't need to customize anything.)
 2. In this project's directory, run `cargo build --workspace` to fetch and build all dependencies.
 
+or [![Open in Gitpod.](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/jeremyBanks/http-monitor)
+
 ### Running tests
 
 3. `cargo test`

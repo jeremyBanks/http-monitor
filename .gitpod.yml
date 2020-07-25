@@ -1,0 +1,25 @@
+image:
+    file: .gitpod.Dockerfile
+
+tasks:
+    - init: |
+          echo >>"$HOME/.bashrc" 'PATH="$PATH:/usr/local/cargo/bin/"'
+          source "$HOME/.bashrc"
+          /usr/local/cargo/bin/cargo build || echo failed
+          /usr/local/cargo/bin/cargo build --release || echo failed
+          /usr/local/cargo/bin/cargo doc || echo failed
+    - command: |
+          /usr/local/cargo/bin/cargo doc || echo failed
+    - init: |
+          mkdir -p target/docs
+      command: |
+          /usr/local/cargo/bin/http --port 3000 target/docs
+
+ports:
+    - port: 3000
+      onOpen: notify
+
+vscode:
+    extensions:
+        - matklad.rust-analyzer@0.4.0-dev:sJgqBE+kHIaVKLid8xlZJg==
+        - vadimcn.vscode-lldb@1.5.3:vTh/rWhvJ5nQpeAVsD20QA==
