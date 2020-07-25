@@ -2,22 +2,25 @@ image:
     file: .gitpod.Dockerfile
 
 tasks:
-    - init: |
-          echo >>"$HOME/.bashrc" 'PATH="$PATH:/usr/local/cargo/bin/"'
-          source "$HOME/.bashrc"
-          /usr/local/cargo/bin/cargo build || echo failed
-          /usr/local/cargo/bin/cargo build --release || echo failed
-          /usr/local/cargo/bin/cargo doc || echo failed
-    - command: |
-          /usr/local/cargo/bin/cargo doc || echo failed
-    - init: |
-          mkdir -p target/docs
+    - before: |
+          alias g=git
+          git config l=log --graph
+          git config alias.uncommit '!.banksh/bin/git-uncommit'
+          git config alias.wip '!.banksh/bin/git-wip'
+          git config alias.cm '!GIT_MESSAGE_PREFIX= .banksh/bin/git-wip'
+      init: |
+          ln -sf /usr/local/cargo /workspace/.cargo
+          cargo build || echo failed
+          cargo build --release || echo failed
+    - before: |
+          mkdir -p target/doc
       command: |
-          /usr/local/cargo/bin/http --port 3000 target/docs
+          cargo doc || echo failed
+          http --port 8081 target/doc
 
 ports:
-    - port: 3000
-      onOpen: notify
+    - port: 8081
+      onOpen: open-preview
 
 vscode:
     extensions:
