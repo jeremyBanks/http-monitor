@@ -4,11 +4,12 @@ image:
 tasks:
     - before: |
           alias g=git
-          git config l=log --graph
+          git config alias.l 'log --graph'
           git config alias.uncommit '!.banksh/bin/git-uncommit'
           git config alias.wip '!.banksh/bin/git-wip'
           git config alias.cm '!GIT_MESSAGE_PREFIX= .banksh/bin/git-wip'
       init: |
+          mkdir -p /workspace/.cargo/bin
           ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin/*
           cargo build || echo failed
           cargo build --release || echo failed

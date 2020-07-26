@@ -8,4 +8,3 @@ RUN rustup component add --toolchain beta rust-src rls
 RUN rustup component add --toolchain nightly rust-src rls rust-analyzer-preview
 RUN cargo install cargo-edit
 RUN cargo install https
-RUN cargo clean
