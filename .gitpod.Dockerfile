@@ -8,3 +8,5 @@ RUN rustup component add --toolchain beta rust-src rls
 RUN rustup component add --toolchain nightly rust-src rls rust-analyzer-preview
 RUN cargo install cargo-edit
 RUN cargo install https
+ADD https://github.com/rust-analyzer/rust-analyzer/releases/download/nightly/rust-analyzer-linux /usr/local/cargo/bin/rust-analyzer
+RUN chmod +x /usr/local/cargo/bin/rust-analyzer
