@@ -6,18 +6,26 @@ tasks:
           alias g=git
           git config alias.l 'log --graph'
           git config alias.uncommit '!.banksh/bin/git-uncommit'
-          git config alias.wip '!.banksh/bin/git-wip'
           git config alias.cm '!GIT_MESSAGE_PREFIX= .banksh/bin/git-wip'
+          git config alias.wip '!.banksh/bin/git-wip'
+          git config alias.wipe '!.banksh/bin/git-wipe'
       init: |
           mkdir -p /workspace/.cargo/bin
           ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin
+      command: |
+          mkdir -p ./target/doc
+          cargo doc || echo failed
+          cd ./target/doc
+          http --port 8081 .
+    - init: |
+          mkdir -p /workspace/.cargo/bin
+          ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin
+      prebuild: |
           cargo build || echo failed
           cargo build --release || echo failed
-    - before: |
-          mkdir -p target/doc
       command: |
-          cargo doc || echo failed
-          http --port 8081 target/doc
+          pwd
+          ls --color
 
 ports:
     - port: 8081
