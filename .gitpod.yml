@@ -1,5 +1,5 @@
 image:
-    file: .gitpod.Dockerfile
+    file: dev.Dockerfile
 
 tasks:
     - before: |
@@ -14,24 +14,18 @@ tasks:
           ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin
       command: |
           mkdir -p ./target/doc
-          cargo doc || echo failed
+          cargo doc || printf 'Non-critical task failed with exit status %s.\n' "$?"
           cd ./target/doc
-          http --port 8081 .
+          basic-http-server -xa 0.0.0.0:8081 .
     - init: |
-          mkdir -p /workspace/.cargo/bin
-          ln -sf /usr/local/cargo/bin/* /workspace/.cargo/bin
       prebuild: |
-          cargo build || echo failed
-          cargo build --release || echo failed
+          cargo build || printf 'Non-critical task failed with exit status %s.\n' "$?"
+          cargo build --release || printf 'Non-critical task failed with exit status %s.\n' "$?"
       command: |
+          cargo check || printf 'Non-critical task failed with exit status %s.\n' "$?"
           pwd
           ls --color
 
 ports:
     - port: 8081
       onOpen: open-preview
-
-vscode:
-    extensions:
-        - matklad.rust-analyzer@0.4.0-dev:sJgqBE+kHIaVKLid8xlZJg==
-        - vadimcn.vscode-lldb@1.5.3:vTh/rWhvJ5nQpeAVsD20QA==
